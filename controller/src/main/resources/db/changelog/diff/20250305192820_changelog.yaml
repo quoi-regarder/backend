@@ -1,0 +1,153 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_role_type_enum
+      author: william
+      changes:
+        - sql:
+            sql: CREATE TYPE role_type AS ENUM ('User', 'Admin');
+  - changeSet:
+      id: create_table_role
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_roles
+                  name: id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    unique: true
+                  name: name
+                  type: role_type
+              - column:
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: roles
+  - changeSet:
+      id: create_token_type_enum
+      author: william
+      changes:
+        - sql:
+            sql: CREATE TYPE token_type AS ENUM ('VERIFY_EMAIL', 'PASSWORD_RESET');
+  - changeSet:
+      id: create_table_token
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_tokens
+                  name: id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: user_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: type
+                  type: token_type
+              - column:
+                  constraints:
+                    nullable: false
+                  name: token
+                  type: VARCHAR(64)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: expires_at
+                  type: DATETIME
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: tokens
+  - changeSet:
+      id: create_social_provider_enum
+      author: william
+      changes:
+        - sql:
+            sql: CREATE TYPE social_provider_type AS ENUM ('google');
+  - changeSet:
+      id: create_table_user
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_users
+                  name: id
+                  type: UUID
+              - column:
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+              - column:
+                  constraints:
+                    nullable: false
+                  name: role_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    unique: true
+                  name: email
+                  type: VARCHAR(255)
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: is_email_verified
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+              - column:
+                  name: social_provider
+                  type: social_provider_type
+            tableName: users
+  - changeSet:
+      id: foreign_key_user_role
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: role_id
+            baseTableName: users
+            constraintName: fk_users_roles
+            referencedColumnNames: id
+            referencedTableName: roles
+  - changeSet:
+      id: foreign_key_token_user
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: tokens
+            constraintName: fk_tokens_users
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE

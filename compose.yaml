@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    container_name: quoi-regarder_postgres
+    environment:
+      POSTGRES_DB: quoi_regarder
+      POSTGRES_PASSWORD: P@ssw0rd
+      POSTGRES_USER: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    restart: "no"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: quoi-regarder_adminer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ADMINER_PLUGINS: 'tables-filter tinymce enum-option'
+      ADMINER_DESIGN: dracula
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - '8000:8080'
+    restart: "no"

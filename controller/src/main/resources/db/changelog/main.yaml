@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - includeAll:
+      path: db/changelog/diff/
+  - changeSet:
+      id: initial-data
+      author: william
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: db/changelog/data/initial-data.sql
+            splitStatements: false
+

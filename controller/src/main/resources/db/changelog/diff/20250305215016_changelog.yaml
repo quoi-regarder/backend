@@ -1,0 +1,131 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_series_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_series
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  name: first_air_date
+                  type: DATETIME
+              - column:
+                  name: poster_path
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: series
+  - changeSet:
+      id: create_series_translation_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_translations
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_translations
+                  name: language
+                  type: language_iso_type
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: overview
+                  type: TEXT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: serie_translations
+  - changeSet:
+      id: foreign_key_series_translation_serie
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: serie_translations
+            constraintName: fk_series_translation_serie
+            referencedColumnNames: tmdb_id
+            referencedTableName: series
+            onDelete: CASCADE
+  - changeSet:
+      id: create_serie_watchlist_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_watchlist
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_watchlist
+                  name: user_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: status
+                  type: watch_status
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: serie_watchlist
+  - changeSet:
+      id: foreign_key_serie_watchlist_serie
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: serie_watchlist
+            constraintName: fk_serie_watchlist_serie
+            referencedColumnNames: tmdb_id
+            referencedTableName: series
+            onDelete: CASCADE
+  - changeSet:
+      id: foreign_key_serie_watchlist_user
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: serie_watchlist
+            constraintName: fk_serie_watchlist_user
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE

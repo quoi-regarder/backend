@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title th:text="#{email.verification.subject}"></title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100%;
+            background-color: #f5f7fa;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .wrapper {
+            width: 100%;
+            padding: 40px 0;
+        }
+
+        .main-table {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #ff6467;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .header-logo {
+            width: 60px;
+            height: auto;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            color: white;
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .content {
+            padding: 40px 32px;
+        }
+
+        .subtitle {
+            color: #0f172a;
+            font-size: 22px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 24px;
+            letter-spacing: -0.025em;
+        }
+
+        .intro {
+            color: #334155;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .button {
+            background-color: #ff6467;
+            color: white;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-box {
+            background-color: #f5f7fa;
+            border-left: 4px solid #a684ff;
+            padding: 16px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+
+        .disclaimer {
+            font-size: 14px;
+            color: #334155;
+            text-align: center;
+            margin-top: 24px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            padding: 24px;
+            background-color: #f5f7fa;
+            text-align: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .logo {
+            max-width: 40px;
+            height: auto;
+            opacity: 0.9;
+        }
+
+        .footer-text {
+            color: #90a1b9;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        .divider {
+            height: 1px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.06);
+            margin: 24px 0;
+        }
+
+        @media screen and (max-width: 600px) {
+            .wrapper {
+                padding: 0;
+            }
+
+            .main-table {
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 32px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <table border="0" cellpadding="0" cellspacing="0" class="main-table" role="presentation" width="100%">
+        <tr>
+            <td>
+                <!-- Header avec logo et titre -->
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                    <tr>
+                        <td align="center" bgcolor="#ff6467" class="header"
+                            style="background-color: #ff6467; padding: 32px 24px; text-align: center;">
+                            <img alt="Logo" class="header-logo" src="https://quoi-regarder.fr/favicon.png"
+                                 style="width: 60px; height: auto; margin-bottom: 16px;"/>
+                            <h1 class="title"
+                                style="color: white; font-size: 28px; font-weight: 600; margin: 0; letter-spacing: -0.025em;"
+                                th:text="#{email.verification.title}"></h1>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Contenu principal -->
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                    <tr>
+                        <td class="content" style="padding: 40px 32px; background-color: #ffffff;">
+                            <!-- Salutation -->
+                            <h3 class="subtitle"
+                                style="color: #0f172a; font-size: 22px; font-weight: 500; text-align: center; margin-bottom: 24px; letter-spacing: -0.025em;">
+                                <span th:text="#{email.verification.greeting(${username})}"></span>
+                            </h3>
+
+                            <!-- Introduction -->
+                            <p class="intro"
+                               style="color: #334155; text-align: center; font-size: 16px; line-height: 1.6; margin-bottom: 32px;"
+                               th:text="#{email.verification.intro}"></p>
+
+                            <!-- Info Box (optional) -->
+                            <div class="info-box"
+                                 style="background-color: #f5f7fa; border-left: 4px solid #a684ff; padding: 16px; margin: 24px 0; border-radius: 4px;">
+                                <p style="margin: 0; color: #334155;" th:text="#{email.verification.info}"></p>
+                            </div>
+
+                            <!-- Bouton d'action -->
+                            <div class="button-container" style="text-align: center; margin: 32px 0;">
+                                <a class="button"
+                                   style="background-color: #ff6467; color: white; padding: 14px 28px; font-size: 16px; font-weight: 500; border-radius: 8px; text-decoration: none; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
+                                   th:href="${url} + '/?token=' + ${token}"
+                                   th:text="#{email.verification.button}"></a>
+                            </div>
+
+                            <div class="divider"
+                                 style="height: 1px; width: 100%; background-color: rgba(0, 0, 0, 0.06); margin: 24px 0;"></div>
+
+                            <!-- Disclaimer -->
+                            <p class="disclaimer"
+                               style="font-size: 14px; color: #334155; text-align: center; margin-top: 24px; line-height: 1.5;"
+                               th:text="#{email.verification.disclaimer}"></p>
+
+                            <!-- Expiration -->
+                            <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-top: 16px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                            <tr>
+                                                <td style="vertical-align: middle;" valign="middle">
+                                                    <span style="font-size: 13px; color: #64748b;">*</span>
+                                                </td>
+                                                <td style="vertical-align: middle;" valign="middle">
+                                                    <span style="font-size: 13px; color: #64748b;"
+                                                          th:text="#{email.verification.expiry}"></span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Footer -->
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                    <tr>
+                        <td align="center" bgcolor="#f5f7fa" class="footer"
+                            style="background-color: #f5f7fa; padding: 24px; text-align: center; border-top: 1px solid rgba(0, 0, 0, 0.05);">
+                            <div class="logo-container" style="text-align: center; margin-bottom: 16px;">
+                                <img alt="Logo" class="logo" src="https://quoi-regarder.fr/favicon.png"
+                                     style="max-width: 40px; height: auto;"/>
+                            </div>
+                            <p class="footer-text" style="color: #90a1b9; font-size: 13px; margin-top: 12px;"
+                               th:text="#{email.verification.footer(${date})}"></p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

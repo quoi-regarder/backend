@@ -1,0 +1,142 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_movie_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_movies
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: runtime
+                  type: INT
+              - column:
+                  name: release_date
+                  type: DATETIME
+              - column:
+                  name: poster_path
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: movies
+  - changeSet:
+      id: create_movie_translation_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_movie_translations
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_movie_translations
+                  name: language
+                  type: language_iso_type
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+              - column:
+                  name: overview
+                  type: TEXT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: movie_translations
+  - changeSet:
+      id: foreign_key_movie_translation_movie
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: movie_translations
+            constraintName: fk_movie_translations_movie
+            referencedColumnNames: tmdb_id
+            referencedTableName: movies
+            onDelete: CASCADE
+  - changeSet:
+      id: create_watch_status_enum
+      author: william
+      changes:
+        - sql:
+            sql: CREATE TYPE watch_status AS ENUM ('to_watch', 'watching', 'watched');
+  - changeSet:
+      id: create_movie_watchlist_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_movie_watchlist
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_movie_watchlist
+                  name: user_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: status
+                  type: watch_status
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: movie_watchlist
+  - changeSet:
+      id: foreign_key_movie_watchlist_movie
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: movie_watchlist
+            constraintName: fk_movie_watchlist_movie
+            referencedColumnNames: tmdb_id
+            referencedTableName: movies
+            onDelete: CASCADE
+  - changeSet:
+      id: foreign_key_movie_watchlist_user
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: movie_watchlist
+            constraintName: fk_movie_watchlist_user
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE

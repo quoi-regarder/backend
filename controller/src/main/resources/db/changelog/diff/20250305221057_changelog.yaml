@@ -1,0 +1,140 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_serie_episodes_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_series_episodes
+                  name: episode_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: season_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: serie_id
+                  type: BIGINT
+              - column:
+                  name: episode_number
+                  type: INT
+              - column:
+                  name: runtime
+                  type: INT
+              - column:
+                  name: air_date
+                  type: DATETIME
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: serie_episodes
+  - changeSet:
+      id: foreign_key_serie_episode_season
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: season_id
+            baseTableName: serie_episodes
+            constraintName: fk_serie_episode_season
+            referencedColumnNames: season_id
+            referencedTableName: serie_seasons
+            onDelete: CASCADE
+  - changeSet:
+      id: foreign_key_serie_episode_serie
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: serie_id
+            baseTableName: serie_episodes
+            constraintName: fk_serie_episode_serie
+            referencedColumnNames: tmdb_id
+            referencedTableName: series
+            onDelete: CASCADE
+  - changeSet:
+      id: index_serie_episode_season
+      author: william
+      changes:
+        - createIndex:
+            columns:
+              - column:
+                  name: season_id
+            indexName: idx_serie_episode_season
+            tableName: serie_episodes
+  - changeSet:
+      id: index_serie_episode_serie
+      author: william
+      changes:
+        - createIndex:
+            columns:
+              - column:
+                  name: serie_id
+            indexName: idx_serie_episode_serie
+            tableName: serie_episodes
+  - changeSet:
+      id: create_serie_episode_watchlist_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_episode_watchlist
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_episode_watchlist
+                  name: user_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                  name: status
+                  type: watch_status
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: serie_episode_watchlist
+  - changeSet:
+      id: foreign_key_serie_episode_watchlist_episode
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: serie_episode_watchlist
+            constraintName: fk_serie_episode_watchlist_episode
+            referencedColumnNames: episode_id
+            referencedTableName: serie_episodes
+            onDelete: CASCADE
+  - changeSet:
+      id: foreign_key_serie_episode_watchlist_user
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: serie_episode_watchlist
+            constraintName: fk_serie_episode_watchlist_user
+            referencedColumnNames: user_id
+            referencedTableName: profiles
+            onDelete: CASCADE

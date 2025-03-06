@@ -1,0 +1,71 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_language_iso_type_enum
+      author: william
+      changes:
+        - sql:
+            sql: CREATE TYPE language_iso_type AS ENUM ('fr-FR', 'en-US');
+  - changeSet:
+      id: create_color_mode_type_enum
+      author: william
+      changes:
+        - sql:
+            sql: CREATE TYPE color_mode_type AS ENUM ('light', 'dark', 'system');
+  - changeSet:
+      id: create_profile_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_profiles
+                  name: user_id
+                  type: UUID
+              - column:
+                  constraints:
+                    nullable: false
+                    unique: true
+                  name: username
+                  type: VARCHAR(255)
+              - column:
+                  name: first_name
+                  type: VARCHAR(255)
+              - column:
+                  name: last_name
+                  type: VARCHAR(255)
+              - column:
+                  name: avatar_url
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: language
+                  type: language_iso_type
+                  defaultValue: 'fr-FR'
+              - column:
+                  constraints:
+                    nullable: false
+                  name: color_mode
+                  type: color_mode_type
+                  defaultValue: 'system'
+              - column:
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: profiles
+  - changeSet:
+      id: foreign_key_profile_user
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: profiles
+            constraintName: fk_profiles_user
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE
