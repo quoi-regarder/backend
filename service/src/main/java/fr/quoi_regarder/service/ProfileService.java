@@ -6,11 +6,13 @@ import fr.quoi_regarder.dto.user.UpdateColorModeDto;
 import fr.quoi_regarder.dto.user.UpdateLanguageDto;
 import fr.quoi_regarder.dto.user.UpdateProfileDto;
 import fr.quoi_regarder.entity.user.Profile;
+import fr.quoi_regarder.event.ProfileUpdatedEvent;
 import fr.quoi_regarder.exception.exceptions.*;
 import fr.quoi_regarder.mapper.user.ProfileMapper;
 import fr.quoi_regarder.repository.user.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,17 +22,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
-    private static final List<String> ALLOWED_AVATAR_EXTENSIONS = Arrays.asList("webp");
+    private static final List<String> ALLOWED_AVATAR_EXTENSIONS = List.of("webp");
     private static final long MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
     private final ProfileRepository profileRepository;
     private final ProfileMapper profileMapper;
+    private final ApplicationEventPublisher eventPublisher;
     @Value("${app.storage.avatars-path:storage/avatars}")
     private String avatarsPath;
 
@@ -58,8 +60,11 @@ public class ProfileService {
         }
 
         profileMapper.partialUpdate(profile, profileDto);
+        ProfileDto updatedProfileDto = profileMapper.toDto(profileRepository.save(profile));
 
-        return profileMapper.toDto(profileRepository.save(profile));
+        eventPublisher.publishEvent(new ProfileUpdatedEvent(this, userId, updatedProfileDto));
+
+        return updatedProfileDto;
     }
 
     @Transactional
@@ -118,7 +123,12 @@ public class ProfileService {
         // Update profile
         profile.setAvatarUrl(fileName);
 
-        return profileMapper.toDto(profileRepository.save(profile));
+
+        ProfileDto profileDto = profileMapper.toDto(profileRepository.save(profile));
+
+        eventPublisher.publishEvent(new ProfileUpdatedEvent(this, userId, profileDto));
+
+        return profileDto;
     }
 
     @Transactional
@@ -138,7 +148,11 @@ public class ProfileService {
         // Update profile
         profile.setAvatarUrl(null);
 
-        return profileMapper.toDto(profileRepository.save(profile));
+        ProfileDto profileDto = profileMapper.toDto(profileRepository.save(profile));
+
+        eventPublisher.publishEvent(new ProfileUpdatedEvent(this, userId, profileDto));
+
+        return profileDto;
     }
 
     private void validateAvatarFile(MultipartFile file) {
