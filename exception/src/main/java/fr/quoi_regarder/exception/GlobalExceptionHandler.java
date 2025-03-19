@@ -3,6 +3,7 @@ package fr.quoi_regarder.exception;
 import fr.quoi_regarder.commons.enums.ErrorStatus;
 import fr.quoi_regarder.dto.response.ApiResponse;
 import fr.quoi_regarder.exception.exceptions.*;
+import fr.quoi_regarder.exception.exceptions.sse.SseException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 import javax.naming.AuthenticationException;
 import java.util.*;
@@ -252,5 +254,34 @@ public class GlobalExceptionHandler {
                         errorsMap,
                         HttpStatus.BAD_REQUEST
                 ));
+    }
+
+    /**
+     * Handles SSE communication exceptions.
+     */
+    @ExceptionHandler(SseException.class)
+    public ResponseEntity<ApiResponse<Void>> handleSseException(SseException ex) {
+        Map<String, Object> errorsMap = new HashMap<>();
+        errorsMap.put("userId", ex.getUserId());
+        errorsMap.put("eventType", ex.getEventType());
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(
+                        "Server-sent events communication error",
+                        ErrorStatus.SERVICE_UNAVAILABLE,
+                        errorsMap,
+                        HttpStatus.INTERNAL_SERVER_ERROR
+                ));
+    }
+
+    /**
+     * Handles client disconnection in async requests (common with SSE)
+     */
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public ResponseEntity<Void> handleAsyncRequestNotUsableException(AsyncRequestNotUsableException ex) {
+        // Just log at debug level, don't send to Sentry
+        // This is normal behavior when clients disconnect from SSE streams
+        return ResponseEntity.noContent().build();
     }
 }

@@ -3,6 +3,7 @@ package fr.quoi_regarder.security.config;
 import fr.quoi_regarder.security.filter.ActuatorFilter;
 import fr.quoi_regarder.security.filter.JwtAuthenticationFilter;
 import fr.quoi_regarder.security.filter.RateLimitFilter;
+import fr.quoi_regarder.security.filter.SseAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,7 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ActuatorFilter actuatorFilter;
     private final RateLimitFilter rateLimitFilter;
+    private final SseAuthenticationFilter sseAuthenticationFilter;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -47,6 +49,7 @@ public class SecurityConfiguration {
                                         "/reset-password/**",           // All routes related to password reset
                                         "/verify-email/**",             // All routes related to email verification
                                         "/avatars/**",                  // Access to avatars
+                                        "/notifications/**",        // SSE notifications endpoint (auth via filter)
 
                                         "/swagger-ui.html",              // Swagger UI documentation
                                         "/swagger-ui/**",                // Swagger UI documentation
@@ -68,6 +71,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(actuatorFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(sseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -84,8 +88,8 @@ public class SecurityConfiguration {
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of("Authorization"));
 
-        configuration.setMaxAge(3600L);
-
+        // Extended max age to avoid preflight issues with SSE
+        configuration.setMaxAge(7200L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
