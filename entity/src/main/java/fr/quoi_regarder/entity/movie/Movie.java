@@ -22,6 +22,9 @@ public class Movie implements Serializable {
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MovieTranslation> translations;
 
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MovieWatchlist> watchlist;
+
     @Column(name = "runtime", nullable = false)
     private Integer runtime;
 
