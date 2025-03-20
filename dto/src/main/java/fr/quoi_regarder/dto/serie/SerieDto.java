@@ -13,11 +13,12 @@ import java.util.Set;
 @NoArgsConstructor
 public class SerieDto implements Serializable {
     private Long tmdbId;
-    private Set<Long> translationIds;
     private Date firstAirDate;
     private String posterPath;
-    private Date createdAt;
-    private Date updatedAt;
+    private String name;
+    private String overview;
     private Set<Long> seasonIds;
     private Set<Long> episodeIds;
+    private Date createdAt;
+    private Date updatedAt;
 }

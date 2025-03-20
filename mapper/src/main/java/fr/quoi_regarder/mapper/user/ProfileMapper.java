@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class ProfileMapper {
     @Autowired
-    protected UserRepository userRepository;
+    private UserRepository userRepository;
 
     public abstract Profile toEntity(ProfileDto profileDto);
 

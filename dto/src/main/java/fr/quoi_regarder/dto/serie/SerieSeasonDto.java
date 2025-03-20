@@ -17,7 +17,7 @@ public class SerieSeasonDto implements Serializable {
     private Integer seasonNumber;
     private Integer episodeCount;
     private Date airDate;
+    private Set<Long> episodeIds;
     private Date createdAt;
     private Date updatedAt;
-    private Set<Long> episodeIds;
 }
