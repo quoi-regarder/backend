@@ -1,4 +1,4 @@
-package fr.quoi_regarder.service;
+package fr.quoi_regarder.service.movie;
 
 import fr.quoi_regarder.commons.enums.LanguageIsoType;
 import fr.quoi_regarder.commons.enums.WatchStatus;
@@ -9,14 +9,17 @@ import fr.quoi_regarder.entity.movie.MovieTranslation;
 import fr.quoi_regarder.entity.movie.MovieWatchlist;
 import fr.quoi_regarder.entity.movie.id.MovieTranslationId;
 import fr.quoi_regarder.entity.movie.id.MovieWatchlistId;
-import fr.quoi_regarder.event.MovieTotalRuntimeEvent;
-import fr.quoi_regarder.event.MovieWatchlistIdsEvent;
+import fr.quoi_regarder.event.movie.MovieTotalRuntimeEvent;
+import fr.quoi_regarder.event.movie.MovieWatchlistChangedEvent;
+import fr.quoi_regarder.event.movie.MovieWatchlistIdsEvent;
 import fr.quoi_regarder.exception.exceptions.EntityNotExistsException;
 import fr.quoi_regarder.mapper.movie.MovieMapper;
 import fr.quoi_regarder.mapper.movie.MovieWatchlistMapper;
 import fr.quoi_regarder.repository.movie.MovieRepository;
 import fr.quoi_regarder.repository.movie.MovieTranslationRepository;
 import fr.quoi_regarder.repository.movie.MovieWatchlistRepository;
+import fr.quoi_regarder.service.TmdbService;
+import fr.quoi_regarder.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -24,13 +27,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.sql.Date;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
-/**
- * Service responsible for managing movie watchlists
- */
 @Service
 @RequiredArgsConstructor
 public class MovieWatchlistService {
@@ -51,12 +54,8 @@ public class MovieWatchlistService {
      */
     public Map<String, List<Long>> findWatchlistByUserId(UUID userId) {
         Map<String, List<Long>> result = new HashMap<>();
-        result.put("watched", movieWatchlistRepository.findMovieIdsByUserIdAndStatus(userId, WatchStatus.watched));
-        result.put("to_watch", movieWatchlistRepository.findMovieIdsByUserIdAndStatus(userId, WatchStatus.to_watch));
-
-        // Publier l'événement de manière asynchrone
-        publishWatchlistEventAsync(userId, result);
-
+        result.put(WatchStatus.watched.name(), movieWatchlistRepository.findMovieIdsByUserIdAndStatus(userId, WatchStatus.watched));
+        result.put(WatchStatus.to_watch.name(), movieWatchlistRepository.findMovieIdsByUserIdAndStatus(userId, WatchStatus.to_watch));
         return result;
     }
 
@@ -86,16 +85,11 @@ public class MovieWatchlistService {
      */
     public Long calculateTotalRuntimeForUser(UUID userId) {
         Long totalRuntime = movieWatchlistRepository.getTotalRuntimeForUserAndStatus(userId, WatchStatus.watched);
-        totalRuntime = totalRuntime != null ? totalRuntime : 0L;
-
-        // Publier l'événement de manière asynchrone
-        publishTotalRuntimeEventAsync(userId, totalRuntime);
-
-        return totalRuntime;
+        return totalRuntime != null ? totalRuntime : 0L;
     }
 
     /**
-     * Adds a movie to user's watchlist and refreshes user stats
+     * Adds a movie to user's watchlist
      *
      * @param userId User ID
      * @param dto    Movie watchlist data
@@ -105,10 +99,42 @@ public class MovieWatchlistService {
     public MovieWatchlistDto addMovieToWatchlist(UUID userId, MovieWatchlistDto dto) {
         MovieWatchlistDto result = create(dto);
 
-        // Refresh user stats asynchronously
-        refreshUserStatsAsync(userId);
+        // Publish an event that will be processed after transaction commit
+        eventPublisher.publishEvent(new MovieWatchlistChangedEvent(this, userId));
 
         return result;
+    }
+
+    /**
+     * Updates movie status
+     *
+     * @param userId User ID
+     * @param tmdbId TMDB movie ID
+     * @param status New watch status
+     * @return Updated watchlist entry
+     */
+    @Transactional
+    public MovieWatchlistDto updateMovieStatus(UUID userId, Long tmdbId, WatchStatus status) {
+        MovieWatchlistDto result = update(userId, tmdbId, status);
+
+        // Publish an event that will be processed after transaction commit
+        eventPublisher.publishEvent(new MovieWatchlistChangedEvent(this, userId));
+
+        return result;
+    }
+
+    /**
+     * Removes a movie from user's watchlist
+     *
+     * @param userId User ID
+     * @param tmdbId TMDB movie ID
+     */
+    @Transactional
+    public void removeMovieFromWatchlist(UUID userId, Long tmdbId) {
+        delete(userId, tmdbId);
+
+        // Publish an event that will be processed after transaction commit
+        eventPublisher.publishEvent(new MovieWatchlistChangedEvent(this, userId));
     }
 
     /**
@@ -133,24 +159,6 @@ public class MovieWatchlistService {
     }
 
     /**
-     * Updates movie status and refreshes user stats
-     *
-     * @param userId User ID
-     * @param tmdbId TMDB movie ID
-     * @param status New watch status
-     * @return Updated watchlist entry
-     */
-    @Transactional
-    public MovieWatchlistDto updateMovieStatus(UUID userId, Long tmdbId, WatchStatus status) {
-        MovieWatchlistDto result = update(userId, tmdbId, status);
-
-        // Refresh user stats asynchronously
-        refreshUserStatsAsync(userId);
-
-        return result;
-    }
-
-    /**
      * Updates a movie watchlist entry
      *
      * @param userId User ID
@@ -170,20 +178,6 @@ public class MovieWatchlistService {
     }
 
     /**
-     * Removes a movie from user's watchlist and refreshes user stats
-     *
-     * @param userId User ID
-     * @param tmdbId TMDB movie ID
-     */
-    @Transactional
-    public void removeMovieFromWatchlist(UUID userId, Long tmdbId) {
-        delete(userId, tmdbId);
-
-        // Refresh user stats asynchronously
-        refreshUserStatsAsync(userId);
-    }
-
-    /**
      * Deletes a movie watchlist entry
      *
      * @param userId User ID
@@ -199,18 +193,49 @@ public class MovieWatchlistService {
     }
 
     /**
+     * Event handler that executes after transaction commit
+     * and sends notifications with up-to-date data.
+     *
+     * @param event Event indicating that a watchlist has been modified
+     */
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleWatchlistChangedEvent(MovieWatchlistChangedEvent event) {
+        UUID userId = event.getUserId();
+
+        try {
+            // Retrieve fresh data
+            Map<String, List<Long>> watchlist = findWatchlistByUserId(userId);
+            Long totalRuntime = calculateTotalRuntimeForUser(userId);
+
+            // Publish events to clients
+            eventPublisher.publishEvent(new MovieWatchlistIdsEvent(this, userId, watchlist));
+
+            Map<String, Long> runtimeData = Map.of("totalRuntime", totalRuntime);
+            eventPublisher.publishEvent(new MovieTotalRuntimeEvent(this, userId, runtimeData));
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
      * Ensures movie exists in the database, fetches and saves it if necessary
      *
      * @param tmdbId TMDB ID
      */
     private void ensureMovieExists(Long tmdbId) {
+        if (movieRepository.existsById(tmdbId)) {
+            return; // Skip if movie already exists
+        }
+
         String userLanguage = userService.getCurrentUserLanguage();
         Map<String, Object> movieDetails = tmdbService.fetchMovieDetails(tmdbId, userLanguage);
 
-        // Save or update movie details
-        saveOrUpdateMovie(tmdbId, movieDetails);
+        if (movieDetails == null || movieDetails.isEmpty()) {
+            throw new EntityNotExistsException(Movie.class, String.format("TMDB ID: %s", tmdbId));
+        }
 
-        // Save or update movie translation for user's language
+        // Save or update movie details and translations
+        saveOrUpdateMovie(tmdbId, movieDetails);
         saveMovieTranslation(tmdbId, userLanguage, movieDetails);
 
         // Fetch and save translations for other languages asynchronously
@@ -240,56 +265,20 @@ public class MovieWatchlistService {
      * @param movieDetails Movie details from TMDB
      */
     private void saveMovieTranslation(Long tmdbId, String language, Map<String, Object> movieDetails) {
-        MovieTranslation translation = movieTranslationRepository
-                .findByIdTmdbIdAndIdLanguage(tmdbId, language)
-                .orElse(new MovieTranslation());
-
+        // Verify if the translation already exists
         MovieTranslationId id = new MovieTranslationId();
         id.setTmdbId(tmdbId);
         id.setLanguage(language);
+        if (movieTranslationRepository.existsById(id)) {
+            return;
+        }
+
+        MovieTranslation translation = new MovieTranslation();
 
         translation.setId(id);
         translation.setTitle((String) movieDetails.get("title"));
         translation.setOverview((String) movieDetails.get("overview"));
         movieTranslationRepository.save(translation);
-    }
-
-    /**
-     * Refreshes user watchlist stats asynchronously
-     *
-     * @param userId User ID
-     */
-    @Async
-    public void refreshUserStatsAsync(UUID userId) {
-        findWatchlistByUserId(userId);
-        calculateTotalRuntimeForUser(userId);
-    }
-
-    /**
-     * Publishes watchlist IDs event asynchronously
-     *
-     * @param userId        User ID
-     * @param watchlistData Watchlist data to publish
-     */
-    @Async
-    public void publishWatchlistEventAsync(UUID userId, Map<String, List<Long>> watchlistData) {
-        eventPublisher.publishEvent(new MovieWatchlistIdsEvent(this, userId, watchlistData));
-    }
-
-    /**
-     * Publishes total runtime event asynchronously
-     *
-     * @param userId       User ID
-     * @param totalRuntime Total runtime value
-     */
-    @Async
-    public void publishTotalRuntimeEventAsync(UUID userId, Long totalRuntime) {
-        Map<String, Long> result = Map.of("totalRuntime", totalRuntime);
-        try {
-            eventPublisher.publishEvent(new MovieTotalRuntimeEvent(this, userId, result));
-        } catch (Exception e) {
-            // Exception silencieusement ignorée
-        }
     }
 
     /**
@@ -300,13 +289,22 @@ public class MovieWatchlistService {
      */
     @Async
     public void fetchOtherLanguageTranslationsAsync(Long tmdbId, String defaultLanguage) {
-        LanguageIsoType defaultLangType = LanguageIsoType.findByCode(defaultLanguage);
+        CompletableFuture.runAsync(() -> {
+            LanguageIsoType defaultLangType = LanguageIsoType.findByCode(defaultLanguage);
 
-        Arrays.stream(LanguageIsoType.values())
-                .filter(lang -> !lang.equals(defaultLangType))
-                .forEach(lang -> {
-                    Map<String, Object> movieDetails = tmdbService.fetchMovieDetails(tmdbId, lang.getCode());
-                    saveMovieTranslation(tmdbId, lang.getCode(), movieDetails);
-                });
+            Arrays.stream(LanguageIsoType.values())
+                    .filter(lang -> !lang.equals(defaultLangType))
+                    .parallel()
+                    .forEach(lang -> {
+                        // Verify if the translation already exists before making the API call
+                        MovieTranslationId id = new MovieTranslationId();
+                        id.setTmdbId(tmdbId);
+                        id.setLanguage(lang.getCode());
+                        if (!movieTranslationRepository.existsById(id)) {
+                            Map<String, Object> movieDetails = tmdbService.fetchMovieDetails(tmdbId, lang.getCode());
+                            saveMovieTranslation(tmdbId, lang.getCode(), movieDetails);
+                        }
+                    });
+        });
     }
 }

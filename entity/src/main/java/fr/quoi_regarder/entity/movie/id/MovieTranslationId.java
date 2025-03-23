@@ -13,9 +13,9 @@ import java.io.Serializable;
 @Embeddable
 @EqualsAndHashCode
 public class MovieTranslationId implements Serializable {
-    @Column(name = "tmdb_id")
+    @Column(name = "tmdb_id", nullable = false)
     private Long tmdbId;
 
-    @Column(name = "language")
+    @Column(name = "language", nullable = false)
     private String language;
 }

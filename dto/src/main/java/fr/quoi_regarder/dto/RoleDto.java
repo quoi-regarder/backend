@@ -1,5 +1,6 @@
 package fr.quoi_regarder.dto;
 
+import fr.quoi_regarder.commons.enums.RoleType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class RoleDto implements Serializable {
     private Long id;
-    private String name;
+    private RoleType name;
     private Date createdAt;
     private Date updatedAt;
 }

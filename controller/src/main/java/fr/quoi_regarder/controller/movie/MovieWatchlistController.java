@@ -1,11 +1,11 @@
-package fr.quoi_regarder.controller;
+package fr.quoi_regarder.controller.movie;
 
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.dto.movie.MovieDto;
 import fr.quoi_regarder.dto.movie.MovieWatchlistDto;
 import fr.quoi_regarder.dto.movie.UpdateStatusRequest;
 import fr.quoi_regarder.dto.response.ApiResponse;
-import fr.quoi_regarder.service.MovieWatchlistService;
+import fr.quoi_regarder.service.movie.MovieWatchlistService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * REST controller for managing movie watchlists
- */
 @RestController
 @RequestMapping("/movie-watchlist/{userId}/movie")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "Bearer Authentication")
+@PreAuthorize("@userSecurity.checkUserId(#userId)")
 public class MovieWatchlistController {
     private final MovieWatchlistService movieWatchlistService;
 
@@ -33,7 +31,6 @@ public class MovieWatchlistController {
      * Get all movie IDs in a user's watchlist grouped by status
      */
     @GetMapping
-    @PreAuthorize("@userSecurity.checkUserId(#userId)")
     public ResponseEntity<ApiResponse<Map<String, List<Long>>>> getWatchlist(
             @PathVariable UUID userId) {
         Map<String, List<Long>> result = movieWatchlistService.findWatchlistByUserId(userId);
@@ -44,7 +41,6 @@ public class MovieWatchlistController {
      * Get detailed movie information from watchlist with pagination
      */
     @GetMapping("/details")
-    @PreAuthorize("@userSecurity.checkUserId(#userId)")
     public ResponseEntity<ApiResponse<Page<MovieDto>>> getMovieDetails(
             @PathVariable UUID userId,
             @RequestParam WatchStatus status,
@@ -58,7 +54,6 @@ public class MovieWatchlistController {
      * Get total runtime for user's watched movies
      */
     @GetMapping("/runtime")
-    @PreAuthorize("@userSecurity.checkUserId(#userId)")
     public ResponseEntity<ApiResponse<Map<String, Long>>> getTotalRuntime(
             @PathVariable UUID userId) {
         Long totalRuntime = movieWatchlistService.calculateTotalRuntimeForUser(userId);
@@ -70,16 +65,9 @@ public class MovieWatchlistController {
      * Add a movie to watchlist
      */
     @PostMapping
-    @PreAuthorize("@userSecurity.checkUserId(#userId)")
     public ResponseEntity<ApiResponse<MovieWatchlistDto>> addMovie(
             @PathVariable UUID userId,
             @Valid @RequestBody MovieWatchlistDto movieWatchlistDTO) {
-
-        // Ensure the user ID in the path matches the one in the request body
-        if (!userId.equals(movieWatchlistDTO.getUserId())) {
-            movieWatchlistDTO.setUserId(userId);
-        }
-
         MovieWatchlistDto result = movieWatchlistService.addMovieToWatchlist(userId, movieWatchlistDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -90,7 +78,6 @@ public class MovieWatchlistController {
      * Update movie watch status
      */
     @PutMapping("/{movieId}")
-    @PreAuthorize("@userSecurity.checkUserId(#userId)")
     public ResponseEntity<ApiResponse<MovieWatchlistDto>> updateStatus(
             @PathVariable UUID userId,
             @PathVariable Long movieId,
@@ -106,7 +93,6 @@ public class MovieWatchlistController {
      * Remove a movie from watchlist
      */
     @DeleteMapping("/{movieId}")
-    @PreAuthorize("@userSecurity.checkUserId(#userId)")
     public ResponseEntity<ApiResponse<Void>> removeMovie(
             @PathVariable UUID userId,
             @PathVariable Long movieId) {

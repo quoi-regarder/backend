@@ -14,9 +14,9 @@ import java.util.UUID;
 @Embeddable
 @EqualsAndHashCode
 public class SerieWatchlistId implements Serializable {
-    @Column(name = "tmdb_id")
+    @Column(name = "tmdb_id", nullable = false)
     private Long tmdbId;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private UUID userId;
 }

@@ -23,7 +23,6 @@ import java.util.Collections;
 @Component
 @RequiredArgsConstructor
 public class ActuatorFilter extends OncePerRequestFilter {
-
     private final ObjectMapper objectMapper;
 
     @Value("${actuator.api.token}")
