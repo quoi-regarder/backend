@@ -1,4 +1,4 @@
-package fr.quoi_regarder.service;
+package fr.quoi_regarder.service.user;
 
 import fr.quoi_regarder.entity.user.Profile;
 import fr.quoi_regarder.entity.user.User;
@@ -31,6 +31,10 @@ public class UserService {
      */
     public String getCurrentUserLanguage() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return null;
+        }
+
         User user = (User) auth.getPrincipal();
 
         return profileRepository.findById(user.getId())

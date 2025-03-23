@@ -1,4 +1,4 @@
-package fr.quoi_regarder.service;
+package fr.quoi_regarder.service.user;
 
 import fr.quoi_regarder.commons.enums.LanguageIsoType;
 import fr.quoi_regarder.dto.user.ProfileDto;

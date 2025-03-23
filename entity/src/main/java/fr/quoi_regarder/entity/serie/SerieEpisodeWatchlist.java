@@ -33,7 +33,7 @@ public class SerieEpisodeWatchlist implements Serializable {
     private WatchStatus status;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private Date createdAt;
 
     @UpdateTimestamp

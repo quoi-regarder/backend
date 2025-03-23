@@ -3,6 +3,7 @@ package fr.quoi_regarder.security.service;
 import fr.quoi_regarder.commons.enums.ColorModeType;
 import fr.quoi_regarder.commons.enums.LanguageIsoType;
 import fr.quoi_regarder.commons.enums.RoleType;
+import fr.quoi_regarder.commons.enums.SocialProviderType;
 import fr.quoi_regarder.entity.Role;
 import fr.quoi_regarder.entity.user.Profile;
 import fr.quoi_regarder.entity.user.User;
@@ -172,6 +173,7 @@ public class SocialService {
         User user = new User();
         user.setEmail((String) userInfo.get("email"));
         user.setEmailVerified(true);
+        user.setSocialProvider(SocialProviderType.google);
 
         // Set role
         Role role = roleRepository.findByName(RoleType.User)

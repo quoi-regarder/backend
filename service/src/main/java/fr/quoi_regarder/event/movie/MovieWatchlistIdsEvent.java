@@ -1,6 +1,7 @@
-package fr.quoi_regarder.event;
+package fr.quoi_regarder.event.movie;
 
 import fr.quoi_regarder.commons.enums.SseEventType;
+import fr.quoi_regarder.event.UserEvent;
 import lombok.Getter;
 
 import java.util.List;

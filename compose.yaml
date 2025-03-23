@@ -24,7 +24,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      ADMINER_PLUGINS: 'tables-filter tinymce enum-option'
+      ADMINER_PLUGINS: 'tables-filter enum-option'
       ADMINER_DESIGN: dracula
       ADMINER_DEFAULT_SERVER: postgres
     ports:

@@ -1,7 +1,7 @@
-package fr.quoi_regarder.controller;
+package fr.quoi_regarder.controller.user;
 
 import fr.quoi_regarder.dto.response.ApiResponse;
-import fr.quoi_regarder.service.UserService;
+import fr.quoi_regarder.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,12 +17,12 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "Bearer Authentication")
+@PreAuthorize("@userSecurity.checkUserId(#userId)")
 public class UserController {
     private final UserService userService;
 
-    @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("/{userId}")
-    @PreAuthorize("@userSecurity.checkUserId(#userId)")
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID userId) {
         userService.deleteUser(userId);
 

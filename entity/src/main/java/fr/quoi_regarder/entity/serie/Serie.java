@@ -22,6 +22,9 @@ public class Serie implements Serializable {
     @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SerieTranslation> translations;
 
+    @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SerieWatchlist> watchlist;
+
     @Column(name = "first_air_date")
     private Date firstAirDate;
 

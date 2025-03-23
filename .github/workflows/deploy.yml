@@ -1,0 +1,77 @@
+name: Build, Push and Deploy Docker Image
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.9.0
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract tag name
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.13.0
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:${{ env.TAG_NAME }}
+            ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to server and deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e  # Exit the script if any command fails
+
+            echo "🔄 Connecting to the server..."
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            echo "📥 Pulling the latest Docker image..."
+            docker pull ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:latest
+
+            echo "🛑 Stopping and removing the existing container..."
+            docker stop quoi-regarder_backend-spring || true
+            docker rm quoi-regarder_backend-spring || true
+
+            echo "🚀 Starting the new container..."
+            docker run -d \
+              --name quoi-regarder_backend-spring \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              --env-file ~/quoi-regarder-backend/application-prod.properties \
+              -v ~/quoi-regarder-storage:/app/storage \
+              ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:latest
+
+            echo "🔗 Connecting the container to the network..."
+            docker network connect quoi-regarder_webnet quoi-regarder_backend-spring
+
+            echo "✅ Deployment completed successfully!"

@@ -1,4 +1,4 @@
-package fr.quoi_regarder.controller;
+package fr.quoi_regarder.controller.user;
 
 import fr.quoi_regarder.commons.enums.ErrorStatus;
 import fr.quoi_regarder.dto.response.ApiResponse;
