@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: fix_serie_episode_watchlist_user_constraint
+      author: william
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: serie_episode_watchlist
+            constraintName: fk48ek2kkgvs7aqim48qwe88yoq
+
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: serie_episode_watchlist
+            constraintName: fk_serie_episode_watchlist_user_fixed
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE

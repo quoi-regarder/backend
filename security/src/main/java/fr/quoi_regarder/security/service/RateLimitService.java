@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Duration;
 import java.util.Map;
@@ -18,8 +20,6 @@ public class RateLimitService {
     // Rate limits configuration
     private static final int ANONYMOUS_LIMIT = 50; // 50 requests per minute for anonymous users
     private static final int AUTHENTICATED_LIMIT = 200; // 200 requests per minute for authenticated users
-
-    private final HttpServletRequest request;
 
     // Cache of buckets, keyed by IP or username
     private final Map<String, Bucket> bucketCache = new ConcurrentHashMap<>();
@@ -58,6 +58,12 @@ public class RateLimitService {
      * @return the IP address
      */
     private String getClientIP() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return "unknown";
+        }
+        
+        HttpServletRequest request = attributes.getRequest();
         final String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader != null && !xfHeader.isEmpty()) {
             return xfHeader.split(",")[0].trim();

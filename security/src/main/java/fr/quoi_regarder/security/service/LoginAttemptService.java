@@ -5,6 +5,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,8 +16,6 @@ public class LoginAttemptService {
     private static final int MAX_ATTEMPTS = 5;
     // Delay before resetting the attempts counter (30 minutes)
     private static final int RESET_DELAY_MILLIS = 30 * 60 * 1000;
-
-    private final HttpServletRequest request;
 
     // Cache to store login attempts by IP address
     private final Cache<String, Integer> attemptsCache = Caffeine.newBuilder()
@@ -105,6 +105,12 @@ public class LoginAttemptService {
      * @return the IP address
      */
     private String getClientIP() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return "unknown";
+        }
+        
+        HttpServletRequest request = attributes.getRequest();
         final String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader != null && !xfHeader.isEmpty()) {
             return xfHeader.split(",")[0].trim();

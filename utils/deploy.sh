@@ -1,8 +1,8 @@
 #!/bin/bash
 
 get_current_version() {
-  # Use grep to extract only a valid version number from the output
-  version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>&1 | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+\(-SNAPSHOT\)\?')
+  # Run maven command and get the first line that contains a valid version number
+  version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>&1 | grep -m 1 -o '[0-9]\+\.[0-9]\+\.[0-9]\+\(-SNAPSHOT\)\?')
 
   # Check if we found a valid version
   if [[ -z "$version" ]]; then
