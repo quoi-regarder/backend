@@ -17,7 +17,7 @@ public class StoreResetPasswordDto {
     @NotBlank
     @Size(min = 8, max = 64)
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
             message = "invalid_password"
     )
     private String password;
