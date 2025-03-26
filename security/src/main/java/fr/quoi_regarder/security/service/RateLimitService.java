@@ -21,7 +21,7 @@ public class RateLimitService {
     private static final int ANONYMOUS_LIMIT = 50; // 50 requests per minute for anonymous users
     private static final int AUTHENTICATED_LIMIT = 200; // 200 requests per minute for authenticated users
 
-    // Cache of buckets, keyed by IP or username
+    // Cache of buckets, keyed by client identifier
     private final Map<String, Bucket> bucketCache = new ConcurrentHashMap<>();
 
     /**
@@ -36,7 +36,7 @@ public class RateLimitService {
     }
 
     /**
-     * Gets the key for the current request (username if authenticated, IP otherwise)
+     * Gets the key for the current request (username if authenticated, client identifier otherwise)
      *
      * @return the key for the rate limit bucket
      */
@@ -48,8 +48,32 @@ public class RateLimitService {
             return "user:" + authentication.getName();
         }
 
-        // Fall back to IP address
-        return "ip:" + getClientIP();
+        // Fall back to client identifier
+        return "client:" + getClientIdentifier();
+    }
+
+    /**
+     * Gets a unique identifier for the current client based on IP and User-Agent
+     *
+     * @return the client identifier
+     */
+    private String getClientIdentifier() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return "unknown";
+        }
+
+        HttpServletRequest request = attributes.getRequest();
+        String ip = getClientIP(request);
+        String userAgent = request.getHeader("User-Agent");
+
+        // If no User-Agent, fallback to IP only
+        if (userAgent == null || userAgent.isEmpty()) {
+            return ip;
+        }
+
+        // Combine IP and User-Agent hash for better identification
+        return ip + ":" + userAgent.hashCode();
     }
 
     /**
@@ -57,13 +81,7 @@ public class RateLimitService {
      *
      * @return the IP address
      */
-    private String getClientIP() {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes == null) {
-            return "unknown";
-        }
-        
-        HttpServletRequest request = attributes.getRequest();
+    private String getClientIP(HttpServletRequest request) {
         final String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader != null && !xfHeader.isEmpty()) {
             return xfHeader.split(",")[0].trim();

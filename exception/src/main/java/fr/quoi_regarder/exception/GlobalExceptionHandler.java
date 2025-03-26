@@ -7,6 +7,7 @@ import fr.quoi_regarder.exception.exceptions.sse.SseException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -260,19 +261,17 @@ public class GlobalExceptionHandler {
      * Handles SSE communication exceptions.
      */
     @ExceptionHandler(SseException.class)
-    public ResponseEntity<ApiResponse<Void>> handleSseException(SseException ex) {
-        Map<String, Object> errorsMap = new HashMap<>();
-        errorsMap.put("userId", ex.getUserId());
-        errorsMap.put("eventType", ex.getEventType());
+    public ResponseEntity<String> handleSseException(SseException ex) {
+        String event = String.format("event: error\ndata: {\"message\":\"%s\",\"status\":\"%s\",\"userId\":\"%s\",\"eventType\":\"%s\"}\n\n",
+                ex.getMessage(),
+                ErrorStatus.AUTHENTICATION_FAILED,
+                ex.getUserId(),
+                ex.getEventType());
 
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(
-                        "Server-sent events communication error",
-                        ErrorStatus.SERVICE_UNAVAILABLE,
-                        errorsMap,
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                ));
+                .status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.TEXT_EVENT_STREAM)
+                .body(event);
     }
 
     /**

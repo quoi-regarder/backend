@@ -5,12 +5,12 @@ databaseChangeLog:
       changes:
         - dropForeignKeyConstraint:
             baseTableName: serie_episode_watchlist
-            constraintName: fk48ek2kkgvs7aqim48qwe88yoq
+            constraintName: fk_serie_episode_watchlist_user
 
         - addForeignKeyConstraint:
             baseColumnNames: user_id
             baseTableName: serie_episode_watchlist
-            constraintName: fk_serie_episode_watchlist_user_fixed
+            constraintName: fk_serie_episode_watchlist_user
             referencedColumnNames: id
             referencedTableName: users
             onDelete: CASCADE

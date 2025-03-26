@@ -147,12 +147,15 @@ public class MovieWatchlistService {
     public MovieWatchlistDto create(MovieWatchlistDto dto) {
         ensureMovieExists(dto.getTmdbId());
 
-        MovieWatchlist movieWatchlist = new MovieWatchlist();
         MovieWatchlistId movieWatchlistId = new MovieWatchlistId();
         movieWatchlistId.setUserId(dto.getUserId());
         movieWatchlistId.setTmdbId(dto.getTmdbId());
-        movieWatchlist.setId(movieWatchlistId);
 
+        if (movieWatchlistRepository.existsById(movieWatchlistId)) {
+            return update(dto.getUserId(), dto.getTmdbId(), dto.getStatus());
+        }
+        MovieWatchlist movieWatchlist = new MovieWatchlist();
+        movieWatchlist.setId(movieWatchlistId);
         movieWatchlist.setStatus(dto.getStatus());
         movieWatchlist.setCreatedAt(new Date(System.currentTimeMillis()));
 

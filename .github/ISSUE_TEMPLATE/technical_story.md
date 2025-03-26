@@ -23,14 +23,14 @@ assignees: ''
 # ✅ Critères d'acceptation
 
 - [ ] **Cas 1** : [Nom du cas]  
-       **Étant donné** [contexte technique]  
-       **Lorsque** [action effectuée]  
-       **Alors** [résultat attendu]
+  **Étant donné** [contexte technique]  
+  **Lorsque** [action effectuée]  
+  **Alors** [résultat attendu]
 
 - [ ] **Cas 2** : [Nom du cas]  
-       **Étant donné** [contexte technique]  
-       **Lorsque** [action effectuée]  
-       **Alors** [résultat attendu]
+  **Étant donné** [contexte technique]  
+  **Lorsque** [action effectuée]  
+  **Alors** [résultat attendu]
 
 # 📌 Notes / Contraintes
 
