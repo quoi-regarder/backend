@@ -14,7 +14,7 @@ import java.util.UUID;
 @Repository
 public interface SerieRepository extends JpaRepository<Serie, Long> {
     @Query(
-            value = "SELECT s FROM Serie s JOIN s.watchlist w WHERE w.user.id = :id AND w.status = :status",
+            value = "SELECT s FROM Serie s JOIN s.watchlist w WHERE w.user.id = :id AND w.status = :status ORDER BY w.createdAt DESC",
             countQuery = "SELECT COUNT(s) FROM Serie s JOIN s.watchlist w WHERE w.user.id = :id AND w.status = :status"
     )
     Page<Serie> findByWatchlistUserIdAndWatchlistStatus(UUID id, WatchStatus status, Pageable pageable);
