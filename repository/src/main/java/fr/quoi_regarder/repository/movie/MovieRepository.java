@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     @Query(
-            value = "SELECT m FROM Movie m JOIN m.watchlist w WHERE w.user.id = :id AND w.status = :status",
+            value = "SELECT m FROM Movie m JOIN m.watchlist w WHERE w.user.id = :id AND w.status = :status ORDER BY w.createdAt DESC",
             countQuery = "SELECT COUNT(m) FROM Movie m JOIN m.watchlist w WHERE w.user.id = :id AND w.status = :status"
     )
     Page<Movie> findByWatchlistUserIdAndWatchlistStatus(UUID id, WatchStatus status, Pageable pageable);
