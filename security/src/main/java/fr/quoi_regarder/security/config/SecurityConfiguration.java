@@ -1,9 +1,6 @@
 package fr.quoi_regarder.security.config;
 
-import fr.quoi_regarder.security.filter.ActuatorFilter;
-import fr.quoi_regarder.security.filter.JwtAuthenticationFilter;
-import fr.quoi_regarder.security.filter.RateLimitFilter;
-import fr.quoi_regarder.security.filter.SseAuthenticationFilter;
+import fr.quoi_regarder.security.filter.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,11 +24,12 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-    private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final ActuatorFilter actuatorFilter;
-    private final RateLimitFilter rateLimitFilter;
     private final SseAuthenticationFilter sseAuthenticationFilter;
+    private final AuthenticationProvider authenticationProvider;
+    private final StatisticsFilter statisticsFilter;
+    private final RateLimitFilter rateLimitFilter;
+    private final ActuatorFilter actuatorFilter;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -71,6 +69,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(actuatorFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(statisticsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(sseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
