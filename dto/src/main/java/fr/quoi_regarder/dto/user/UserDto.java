@@ -17,10 +17,10 @@ import java.util.UUID;
 public class UserDto implements Serializable {
     private UUID id;
     private Long roleId;
-    @Size(max = 50)
+    @Size(max = 255)
     private String email;
     @JsonIgnore
-    @Size(max = 50)
+    @Size(max = 255)
     private String password;
     private boolean isEmailVerified;
     private SocialProviderType socialProvider;

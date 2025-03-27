@@ -14,10 +14,11 @@ import lombok.NoArgsConstructor;
 public class LoginDto {
     @NotBlank
     @Email
+    @Size(max = 255)
     private String email;
 
     @NotBlank
-    @Size(min = 8, max = 64)
+    @Size(min = 8, max = 40)
     @Pattern(
             regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
             message = "invalid_password"

@@ -11,11 +11,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegisterDto {
     @NotBlank
-    @Size(min = 3, max = 32)
+    @Size(min = 3, max = 255)
     private String username;
 
+    @Size(max = 255)
     private String firstName;
 
+    @Size(max = 255)
     private String lastName;
 
     @NotBlank
@@ -23,7 +25,7 @@ public class RegisterDto {
     private String email;
 
     @NotBlank
-    @Size(min = 8, max = 64)
+    @Size(min = 8, max = 40)
     @Pattern(
             regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
             message = "invalid_password"

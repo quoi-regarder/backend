@@ -16,13 +16,13 @@ import java.util.UUID;
 public class ProfileDto implements Serializable {
     private UUID userId;
     private String email;
-    @Size(max = 254)
+    @Size(min = 3, max = 255)
     private String username;
-    @Size(max = 254)
+    @Size(max = 255)
     private String firstName;
-    @Size(max = 254)
+    @Size(max = 255)
     private String lastName;
-    @Size(max = 254)
+    @Size(max = 255)
     private String avatarUrl;
     private String language;
     private ColorModeType colorMode;

@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: increase-avatar-url-size-fix
+      author: william
+      changes:
+        - sql: ALTER TABLE profiles ALTER COLUMN avatar_url TYPE TEXT;
+  - changeSet:
+      id: increase-password-size-fix
+      author: william
+      changes:
+        - sql: ALTER TABLE users ALTER COLUMN password TYPE TEXT;

@@ -15,7 +15,7 @@ public class StoreResetPasswordDto {
     private String token;
 
     @NotBlank
-    @Size(min = 8, max = 64)
+    @Size(min = 8, max = 40)
     @Pattern(
             regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
             message = "invalid_password"
