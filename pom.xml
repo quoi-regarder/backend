@@ -9,7 +9,7 @@
     </parent>
     <groupId>fr.quoi_regarder</groupId>
     <artifactId>backend</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>backend</name>
     <modules>
@@ -139,47 +139,47 @@
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>entity</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>dto</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>mapper</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>repository</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>service</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>controller</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>security</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>exception</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.quoi_regarder</groupId>
                 <artifactId>common</artifactId>
-                <version>0.0.6</version>
+                <version>0.0.7-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

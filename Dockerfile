@@ -17,6 +17,10 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Set timezone
+RUN apk add --no-cache tzdata
+ENV TZ=Europe/Paris
+
 # Copy only the final JAR file from the build stagec
 COPY --from=build /app/controller/target/*-exe.jar quoi-regarder.jar
 
