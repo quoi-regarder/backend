@@ -5,11 +5,14 @@ import fr.quoi_regarder.commons.enums.SerieContext;
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.dto.serie.SerieEpisodeWatchlistDto;
 import fr.quoi_regarder.dto.serie.SerieWatchlistDto;
+import fr.quoi_regarder.entity.serie.SerieEpisode;
 import fr.quoi_regarder.entity.serie.SerieEpisodeWatchlist;
 import fr.quoi_regarder.entity.serie.SerieSeason;
 import fr.quoi_regarder.entity.serie.SerieSeasonWatchlist;
-import fr.quoi_regarder.mapper.serie.SerieEpisodeWatchlistMapper;
+import fr.quoi_regarder.entity.serie.id.SerieEpisodeWatchlistId;
+import fr.quoi_regarder.entity.user.User;
 import fr.quoi_regarder.repository.serie.*;
+import fr.quoi_regarder.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +26,12 @@ import java.util.UUID;
 public class SerieEpisodeWatchlistService implements WatchlistService<SerieEpisodeWatchlistDto> {
     private final SerieEpisodeWatchlistRepository serieEpisodeWatchlistRepository;
     private final SerieSeasonWatchlistRepository serieSeasonWatchlistRepository;
-    private final SerieEpisodeWatchlistMapper serieEpisodeWatchlistMapper;
     private final SerieWatchlistEventService serieWatchlistEventService;
     private final WatchlistStatusCalculator watchlistStatusCalculator;
     private final SerieWatchlistRepository serieWatchlistRepository;
     private final SerieEpisodeRepository serieEpisodeRepository;
     private final SerieSeasonRepository serieSeasonRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -65,13 +68,22 @@ public class SerieEpisodeWatchlistService implements WatchlistService<SerieEpiso
     }
 
     private void addToWatchlistInternal(UUID userId, Long serieId, Long episodeId, WatchStatus watchStatus) {
-        SerieEpisodeWatchlistDto episodeWatchlistDto = new SerieEpisodeWatchlistDto();
-        episodeWatchlistDto.setTmdbId(episodeId);
-        episodeWatchlistDto.setUserId(userId);
-        episodeWatchlistDto.setStatus(watchStatus);
-        episodeWatchlistDto.setCreatedAt(new Date(System.currentTimeMillis()));
+        SerieEpisode episode = serieEpisodeRepository.findById(episodeId)
+                .orElseThrow(() -> new RuntimeException("Episode not found"));
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        serieEpisodeWatchlistRepository.save(serieEpisodeWatchlistMapper.toEntity(episodeWatchlistDto));
+        SerieEpisodeWatchlist episodeWatchlist = new SerieEpisodeWatchlist();
+        SerieEpisodeWatchlistId episodeWatchlistId = new SerieEpisodeWatchlistId();
+        episodeWatchlistId.setTmdbId(episodeId);
+        episodeWatchlistId.setUserId(userId);
+        episodeWatchlist.setId(episodeWatchlistId);
+        episodeWatchlist.setSerieEpisode(episode);
+        episodeWatchlist.setUser(user);
+        episodeWatchlist.setStatus(watchStatus);
+        episodeWatchlist.setCreatedAt(new Date(System.currentTimeMillis()));
+
+        serieEpisodeWatchlistRepository.save(episodeWatchlist);
         updateSerieStatus(userId, serieId, episodeId);
     }
 
@@ -102,6 +114,11 @@ public class SerieEpisodeWatchlistService implements WatchlistService<SerieEpiso
         List<SerieSeasonWatchlist> seasonWatchlists = serieSeasonWatchlistRepository
                 .findSeasonByUserIdAndSerieTmdbId(userId, serieId);
         Long totalSeasonCount = serieSeasonRepository.countBySerieTmdbId(serieId);
+
+        if (seasonWatchlists.isEmpty()) {
+            serieWatchlistRepository.deleteByUserIdAndTmdbId(userId, serieId);
+            return;
+        }
 
         WatchStatus serieStatus = watchlistStatusCalculator.calculateStatus(seasonWatchlists, totalSeasonCount);
         watchlistStatusCalculator.updateOrCreateWatchlist(userId, serieId, serieStatus, new SerieWatchlistDto());
