@@ -23,14 +23,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Modifying
     @Transactional
     @Query(
-            value = "DELETE FROM users WHERE id IN (" +
-                    "SELECT user_id FROM tokens WHERE expires_at <= :expiryDate AND type = :tokenType" +
-                    " )" +
-                    " AND is_email_verified = false",
+            value = "DELETE FROM users WHERE created_at <= :creationDate AND is_email_verified = false",
             nativeQuery = true
     )
-    void deleteAllByTokenTypeAndExpiryDateBefore(
-            @Param("tokenType") String tokenType,
-            @Param("expiryDate") Date expiryDate
+    void deleteUnverifiedUsersCreatedBefore(
+            @Param("creationDate") Date creationDate
     );
 }

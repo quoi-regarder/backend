@@ -10,7 +10,7 @@ RUN apk add --no-cache maven
 COPY . .
 
 # Run Maven to resolve dependencies and build the project
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -Pprod
 
 # ---- Runtime Stage ----
 FROM eclipse-temurin:21-jre-alpine
@@ -28,4 +28,5 @@ COPY --from=build /app/controller/target/*-exe.jar quoi-regarder.jar
 EXPOSE 8080
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "/app/quoi-regarder.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "/app/quoi-regarder.jar"]
+

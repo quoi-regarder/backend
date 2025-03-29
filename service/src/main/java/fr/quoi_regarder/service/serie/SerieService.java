@@ -95,7 +95,7 @@ public class SerieService {
         List<Map<String, Object>> seasons = (List<Map<String, Object>>) serieDetails.get("seasons");
         if (seasons == null || seasons.isEmpty()) return;
 
-        seasons.parallelStream().forEach(season -> processSingleSeason(serie, season));
+        seasons.stream().forEach(season -> processSingleSeason(serie, season));
     }
 
     public void processTranslations(Long serieId, String defaultLanguage) {
@@ -203,7 +203,7 @@ public class SerieService {
                 .map(SerieEpisode::getEpisodeId)
                 .collect(Collectors.toSet());
 
-        List<SerieEpisode> episodesToSave = episodes.parallelStream()
+        List<SerieEpisode> episodesToSave = episodes.stream()
                 .map(episode -> {
                     Long episodeId = Long.valueOf(episode.get("id").toString());
                     return existingIds.contains(episodeId) ? null : createEpisodeEntity(serie, serieSeason, episode);
