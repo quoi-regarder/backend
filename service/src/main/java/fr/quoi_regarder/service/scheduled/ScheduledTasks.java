@@ -8,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Date;
 
 @Service
@@ -25,7 +26,11 @@ public class ScheduledTasks {
 
     @Scheduled(cron = "0 0 0 * * *")
     public void deleteUserBasedOnVerifyEmailToken() {
-        userRepository.deleteAllByTokenTypeAndExpiryDateBefore(TokenType.VERIFY_EMAIL.name(), new Date());
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, -1);
+        Date dayAgo = cal.getTime();
+
+        userRepository.deleteUnverifiedUsersCreatedBefore(dayAgo);
         tokenRepository.deleteByTypeAndExpiresAtBefore(TokenType.VERIFY_EMAIL, new Date());
         log.info("[Scheduled Task] Deleted Expired Verify Email Tokens");
     }

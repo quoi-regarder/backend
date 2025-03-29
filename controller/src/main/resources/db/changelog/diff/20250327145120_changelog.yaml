@@ -1,17 +1,17 @@
 databaseChangeLog:
-    - changeSet:
-          id: increase-avatar-url-size
-          author: william
-          changes:
-              - modifyDataType:
-                    columnName: avatar_url
-                    newDataType: VARCHAR(512)
-                    tableName: profiles
-    - changeSet:
-          id: increase-password-size
-          author: william
-          changes:
-              - modifyDataType:
-                    columnName: password
-                    newDataType: VARCHAR(512)
-                    tableName: users
+  - changeSet:
+      id: increase-avatar-url-size
+      author: william
+      changes:
+        - modifyDataType:
+            columnName: avatar_url
+            newDataType: VARCHAR(512)
+            tableName: profiles
+  - changeSet:
+      id: increase-password-size
+      author: william
+      changes:
+        - modifyDataType:
+            columnName: password
+            newDataType: VARCHAR(512)
+            tableName: users

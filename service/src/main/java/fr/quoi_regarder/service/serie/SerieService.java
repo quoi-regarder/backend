@@ -9,8 +9,6 @@ import fr.quoi_regarder.entity.serie.SerieEpisode;
 import fr.quoi_regarder.entity.serie.SerieSeason;
 import fr.quoi_regarder.entity.serie.SerieTranslation;
 import fr.quoi_regarder.entity.serie.id.SerieTranslationId;
-import fr.quoi_regarder.event.EventPublisherService;
-import fr.quoi_regarder.event.serie.SerieDataLoadedEvent;
 import fr.quoi_regarder.exception.exceptions.EntityNotExistsException;
 import fr.quoi_regarder.repository.serie.SerieEpisodeRepository;
 import fr.quoi_regarder.repository.serie.SerieRepository;
@@ -34,9 +32,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SerieService {
     private final SerieTranslationRepository serieTranslationRepository;
+    private final List<WatchlistService<?>> watchlistServices;
     private final SerieEpisodeRepository serieEpisodeRepository;
     private final SerieSeasonRepository serieSeasonRepository;
-    private final EventPublisherService eventPublisherService;
     private final SerieRepository serieRepository;
     private final TmdbService tmdbService;
     private final UserService userService;
@@ -76,7 +74,7 @@ public class SerieService {
                     });
 
             CompletableFuture.allOf(episodesFuture, translationsFuture)
-                    .thenRunAsync(() -> publishDataLoadedEvent(userId, serieId, contextId, context, action, watchStatus))
+                    .thenRunAsync(() -> handleWatchlistAction(userId, serieId, contextId, context, action, watchStatus))
                     .exceptionally(ex -> {
                         log.error("Error publishing event", ex);
                         return null;
@@ -238,31 +236,37 @@ public class SerieService {
         return serieEpisode;
     }
 
-    private void publishDataLoadedEvent(UUID userId, Long serieId, Long contextId, SerieContext context, EventAction action, WatchStatus watchStatus) {
-        SerieDataLoadedEvent event = switch (context) {
-            case SERIE -> new SerieDataLoadedEvent.SerieEvent(this, serieId, userId, action, watchStatus);
-            case SEASON -> new SerieDataLoadedEvent.SeasonEvent(this, serieId, contextId, userId, action, watchStatus);
-            case EPISODE ->
-                    new SerieDataLoadedEvent.EpisodeEvent(this, serieId, contextId, userId, action, watchStatus);
-        };
-        eventPublisherService.publishSerieDataLoadedEvent(event);
+    private void handleWatchlistAction(UUID userId, Long serieId, Long contextId, SerieContext context, EventAction action, WatchStatus watchStatus) {
+        watchlistServices.stream()
+                .filter(service -> service.getContext() == context)
+                .findFirst()
+                .ifPresent(service -> service.handleAction(userId, serieId, contextId, action, watchStatus));
     }
 
     private void saveOrUpdateSerie(Long tmdbId, Map<String, Object> serieDetails) {
-        Serie serie = serieRepository.findByTmdbId(tmdbId).orElse(new Serie());
-        serie.setTmdbId(tmdbId);
+        boolean exists = serieRepository.existsByTmdbId(tmdbId);
 
-        String firstAirDate = (String) serieDetails.get("first_air_date");
-        if (StringUtils.hasText(firstAirDate)) {
+        String posterPath = (String) serieDetails.get("poster_path");
+
+        Date firstAirDate = null;
+        String firstAirDateStr = (String) serieDetails.get("first_air_date");
+        if (StringUtils.hasText(firstAirDateStr)) {
             try {
-                serie.setFirstAirDate(Date.valueOf(firstAirDate));
+                firstAirDate = Date.valueOf(firstAirDateStr);
             } catch (IllegalArgumentException ignored) {
             }
         }
 
-        serie.setPosterPath((String) serieDetails.get("poster_path"));
-
-        serieRepository.save(serie);
+        if (exists) {
+            serieRepository.updateSerie(tmdbId, posterPath, firstAirDate);
+        } else {
+            // Créer une nouvelle série
+            Serie serie = new Serie();
+            serie.setTmdbId(tmdbId);
+            serie.setPosterPath(posterPath);
+            serie.setFirstAirDate(firstAirDate);
+            serieRepository.save(serie);
+        }
     }
 
     private void saveSerieTranslation(Long tmdbId, String language, Map<String, Object> serieDetails) {

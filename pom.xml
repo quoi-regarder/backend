@@ -133,6 +133,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.5</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -226,8 +231,12 @@
                 <version>0.3.0</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <org>egenr</org>
-                    <project>quoi-regarder-spring-boot</project>
+                    <!-- for showing output of sentry-cli -->
+                    <debugSentryCli>true</debugSentryCli>
+
+                    <org>quoi-regarder</org>
+
+                    <project>backend</project>
                 </configuration>
             </plugin>
         </plugins>
@@ -250,11 +259,6 @@
                 <dependency>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-docker-compose</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.springdoc</groupId>
-                    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                    <version>2.8.5</version>
                 </dependency>
             </dependencies>
         </profile>

@@ -10,7 +10,7 @@ RUN apk add --no-cache maven
 COPY . .
 
 # Run Maven to resolve dependencies and build the project
-RUN mvn clean package -DskipTests
+RUN mvn clean package
 
 # ---- Runtime Stage ----
 FROM eclipse-temurin:21-jre-alpine
@@ -21,7 +21,7 @@ WORKDIR /app
 RUN apk add --no-cache tzdata
 ENV TZ=Europe/Paris
 
-# Copy only the final JAR file from the build stagec
+# Copy only the final JAR file from the build stage
 COPY --from=build /app/controller/target/*-exe.jar quoi-regarder.jar
 
 # Expose the application port
