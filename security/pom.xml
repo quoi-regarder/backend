@@ -6,7 +6,7 @@
     <parent>
         <groupId>fr.quoi_regarder</groupId>
         <artifactId>backend</artifactId>
-        <version>0.0.10-SNAPSHOT</version>
+        <version>0.0.10</version>
     </parent>
     <artifactId>security</artifactId>
     <name>security</name>
