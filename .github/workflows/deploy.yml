@@ -35,6 +35,8 @@ jobs:
         with:
           context: .
           push: true
+          build-args: |
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:${{ env.TAG_NAME }}
             ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:latest
@@ -67,7 +69,7 @@ jobs:
               --name quoi-regarder_backend-spring \
               --restart unless-stopped \
               -p 8080:8080 \
-              --env-file ~/quoi-regarder-backend/application-prod.properties \
+              --env-file ~/quoi-regarder-backend/application-production.properties \
               -v ~/quoi-regarder-storage:/app/storage \
               ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:latest
 

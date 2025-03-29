@@ -37,7 +37,7 @@ build/
 
 ### Application properties ###
 application-dev.properties
-application-prod.properties
+application-production.properties
 application-preprod.properties
 
 

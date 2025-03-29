@@ -11,9 +11,6 @@ import fr.quoi_regarder.entity.serie.SerieEpisode;
 import fr.quoi_regarder.entity.serie.SerieEpisodeWatchlist;
 import fr.quoi_regarder.entity.serie.SerieSeason;
 import fr.quoi_regarder.entity.serie.SerieSeasonWatchlist;
-import fr.quoi_regarder.entity.serie.id.SerieEpisodeWatchlistId;
-import fr.quoi_regarder.entity.serie.id.SerieSeasonWatchlistId;
-import fr.quoi_regarder.entity.serie.id.SerieWatchlistId;
 import fr.quoi_regarder.mapper.serie.SerieEpisodeWatchlistMapper;
 import fr.quoi_regarder.mapper.serie.SerieMapper;
 import fr.quoi_regarder.mapper.serie.SerieSeasonWatchlistMapper;
@@ -30,8 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +60,7 @@ public class SerieWatchlistService implements WatchlistService<SerieWatchlistDto
     public void handleAction(UUID userId, Long serieId, Long contextId, EventAction action, WatchStatus watchStatus) {
         switch (action) {
             case ADD -> addToWatchlistInternal(userId, serieId, watchStatus);
-            case UPDATE -> updateStatusInternal(userId, serieId, watchStatus);
+            case UPDATE -> addToWatchlistInternal(userId, serieId, watchStatus);
             case REMOVE -> removeFromWatchlistInternal(userId, serieId);
         }
         serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
@@ -115,80 +110,6 @@ public class SerieWatchlistService implements WatchlistService<SerieWatchlistDto
                     episodeDto.setStatus(watchStatus);
                     episodeDto.setCreatedAt(new Date(System.currentTimeMillis()));
                     return serieEpisodeWatchlistMapper.toEntity(episodeDto);
-                })
-                .toList();
-        serieEpisodeWatchlistRepository.saveAll(episodeWatchlists);
-    }
-
-    private void updateStatusInternal(UUID userId, Long serieId, WatchStatus status) {
-        // Update serie watchlist
-        SerieWatchlistId serieWatchlistId = new SerieWatchlistId();
-        serieWatchlistId.setTmdbId(serieId);
-        serieWatchlistId.setUserId(userId);
-        serieWatchlistRepository.findById(serieWatchlistId)
-                .ifPresent(serieWatchlist -> {
-                    SerieWatchlistDto serieWatchlistDto = serieWatchlistMapper.toDto(serieWatchlist);
-                    serieWatchlistDto.setStatus(status);
-                    serieWatchlistMapper.partialUpdate(serieWatchlistDto, serieWatchlist);
-                    serieWatchlistRepository.save(serieWatchlist);
-                });
-
-        // Get all seasons and episodes in one query
-        List<SerieSeason> seasons = serieSeasonRepository.findBySerieTmdbId(serieId);
-        List<SerieEpisode> episodes = serieEpisodeRepository.findBySerieTmdbId(serieId);
-
-        // Create IDs for batch lookup
-        List<SerieSeasonWatchlistId> seasonWatchlistIds = seasons.stream()
-                .map(season -> {
-                    SerieSeasonWatchlistId id = new SerieSeasonWatchlistId();
-                    id.setTmdbId(season.getSeasonId());
-                    id.setUserId(userId);
-                    return id;
-                })
-                .toList();
-
-        List<SerieEpisodeWatchlistId> episodeWatchlistIds = episodes.stream()
-                .map(episode -> {
-                    SerieEpisodeWatchlistId id = new SerieEpisodeWatchlistId();
-                    id.setTmdbId(episode.getEpisodeId());
-                    id.setUserId(userId);
-                    return id;
-                })
-                .toList();
-
-        // Find all existing watchlists in batch
-        Map<SerieSeasonWatchlistId, SerieSeasonWatchlist> existingSeasonWatchlists = serieSeasonWatchlistRepository.findAllById(seasonWatchlistIds)
-                .stream()
-                .collect(Collectors.toMap(SerieSeasonWatchlist::getId, Function.identity()));
-
-        Map<SerieEpisodeWatchlistId, SerieEpisodeWatchlist> existingEpisodeWatchlists = serieEpisodeWatchlistRepository.findAllById(episodeWatchlistIds)
-                .stream()
-                .collect(Collectors.toMap(SerieEpisodeWatchlist::getId, Function.identity()));
-
-        // Create or update season watchlists
-        List<SerieSeasonWatchlist> seasonWatchlists = seasonWatchlistIds.stream()
-                .map(id -> {
-                    SerieSeasonWatchlist watchlist = existingSeasonWatchlists.getOrDefault(id, new SerieSeasonWatchlist());
-                    watchlist.setId(id);
-                    SerieSeasonWatchlistDto dto = serieSeasonWatchlistMapper.toDto(watchlist);
-                    dto.setStatus(status);
-                    dto.setCreatedAt(new Date(System.currentTimeMillis()));
-                    serieSeasonWatchlistMapper.partialUpdate(dto, watchlist);
-                    return watchlist;
-                })
-                .toList();
-        serieSeasonWatchlistRepository.saveAll(seasonWatchlists);
-
-        // Create or update episode watchlists
-        List<SerieEpisodeWatchlist> episodeWatchlists = episodeWatchlistIds.stream()
-                .map(id -> {
-                    SerieEpisodeWatchlist watchlist = existingEpisodeWatchlists.getOrDefault(id, new SerieEpisodeWatchlist());
-                    watchlist.setId(id);
-                    SerieEpisodeWatchlistDto dto = serieEpisodeWatchlistMapper.toDto(watchlist);
-                    dto.setStatus(status);
-                    dto.setCreatedAt(new Date(System.currentTimeMillis()));
-                    serieEpisodeWatchlistMapper.partialUpdate(dto, watchlist);
-                    return watchlist;
                 })
                 .toList();
         serieEpisodeWatchlistRepository.saveAll(episodeWatchlists);
