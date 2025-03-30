@@ -23,10 +23,6 @@
         </dependency>
         <dependency>
             <groupId>fr.quoi_regarder</groupId>
-            <artifactId>security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.quoi_regarder</groupId>
             <artifactId>exception</artifactId>
         </dependency>
         <dependency>
