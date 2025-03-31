@@ -256,7 +256,15 @@ public class MovieWatchlistService {
         Movie movie = movieRepository.findByTmdbId(tmdbId).orElse(new Movie());
         movie.setTmdbId(tmdbId);
         movie.setRuntime((Integer) movieDetails.get("runtime"));
-        movie.setReleaseDate(Date.valueOf((String) movieDetails.get("release_date")));
+
+        // Vérifier si release_date est null avant la conversion
+        String releaseDate = (String) movieDetails.get("release_date");
+        if (releaseDate != null && !releaseDate.isEmpty()) {
+            movie.setReleaseDate(Date.valueOf(releaseDate));
+        } else {
+            movie.setReleaseDate(null);
+        }
+
         movie.setPosterPath((String) movieDetails.get("poster_path"));
         movieRepository.save(movie);
     }
