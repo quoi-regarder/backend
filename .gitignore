@@ -38,7 +38,7 @@ build/
 ### Application properties ###
 application-dev.properties
 application-production.properties
-application-preprod.properties
+application-preproductioncd.properties
 
 
 ### Upload files ###

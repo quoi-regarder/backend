@@ -65,7 +65,7 @@ jobs:
               --name quoi-regarder_backend-spring \
               --restart unless-stopped \
               -p 8080:8080 \
-              --env-file ~/quoi-regarder-backend/application-preprod.properties \
+              --env-file ~/quoi-regarder-backend/application-preproduction.properties \
               -v ~/quoi-regarder-storage:/app/storage \
               ghcr.io/${{ github.repository_owner }}/quoi-regarder_backend-spring:develop
 

@@ -272,16 +272,16 @@
             </dependencies>
         </profile>
 
-        <!-- The profile for the preprod environment -->
+        <!-- The profile for the preproduction environment -->
         <profile>
-            <id>preprod</id>
+            <id>preproduction</id>
             <properties>
-                <spring.profiles.active>preprod</spring.profiles.active>
+                <spring.profiles.active>preproduction</spring.profiles.active>
             </properties>
             <activation>
                 <property>
                     <name>env</name>
-                    <value>preprod</value>
+                    <value>preproduction</value>
                 </property>
             </activation>
         </profile>
