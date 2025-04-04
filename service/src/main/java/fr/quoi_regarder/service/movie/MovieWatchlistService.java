@@ -193,7 +193,9 @@ public class MovieWatchlistService {
         id.setUserId(userId);
         id.setTmdbId(tmdbId);
 
-        movieWatchlistRepository.deleteById(id);
+        try {
+            movieWatchlistRepository.findById(id).ifPresent(movieWatchlistRepository::delete);
+        } catch (Exception e) {}
     }
 
     /**
