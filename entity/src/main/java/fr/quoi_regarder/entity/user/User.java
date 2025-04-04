@@ -26,7 +26,7 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password")
+    @Column(name = "password", length = 1024)
     private String password;
 
     @Column(name = "is_email_verified", nullable = false)

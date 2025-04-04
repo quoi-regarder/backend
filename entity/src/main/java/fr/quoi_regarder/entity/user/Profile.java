@@ -34,7 +34,7 @@ public class Profile implements Serializable {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "avatar_url")
+    @Column(name = "avatar_url", length = 1024)
     private String avatarUrl;
 
     @Column(name = "language", nullable = false)
