@@ -57,7 +57,7 @@ public class SentryExceptionHandler {
                 sentryUser.setUsername(currentUser.getUsername());
 
                 // Add additional user context if available
-                Sentry.setTag("userRole", authentication.getAuthorities().toString());
+                Sentry.setTag("userRole", currentUser.getRole().toString());
 
                 Sentry.setUser(sentryUser);
             } else {

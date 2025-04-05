@@ -189,13 +189,7 @@ public class MovieWatchlistService {
      */
     @Transactional
     public void delete(UUID userId, Long tmdbId) {
-        MovieWatchlistId id = new MovieWatchlistId();
-        id.setUserId(userId);
-        id.setTmdbId(tmdbId);
-
-        try {
-            movieWatchlistRepository.findById(id).ifPresent(movieWatchlistRepository::delete);
-        } catch (Exception e) {}
+        movieWatchlistRepository.deleteByUserIdAndTmdbId(userId, tmdbId);
     }
 
     /**
