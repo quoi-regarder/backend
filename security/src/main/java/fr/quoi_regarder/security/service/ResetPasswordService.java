@@ -85,18 +85,20 @@ public class ResetPasswordService {
                 .orElseThrow(() -> new InvalidTokenException(TokenType.PASSWORD_RESET));
 
         User user = token.getUser();
-        user.setPassword(passwordEncoder.encode(storeResetPasswordDto.getPassword()));
+        String userEmail = user.getEmail();
+        String rawPassword = storeResetPasswordDto.getPassword();
 
+        user.setPassword(passwordEncoder.encode(rawPassword));
         userRepository.save(user);
-
-        tokenRepository.delete(token);
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        user.getEmail(),
-                        storeResetPasswordDto.getPassword()
+                        userEmail,
+                        rawPassword
                 )
         );
+
+        tokenRepository.delete(token);
 
         return user;
     }
