@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: increase-avatar-url-size-second
+      author: william
+      changes:
+        - modifyDataType:
+            columnName: avatar_url
+            newDataType: VARCHAR(4096)
+            tableName: profiles
