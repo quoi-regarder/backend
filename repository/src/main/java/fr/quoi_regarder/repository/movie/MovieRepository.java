@@ -20,5 +20,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     )
     Page<Movie> findByWatchlistUserIdAndWatchlistStatus(UUID id, WatchStatus status, Pageable pageable);
 
+    @Query(
+            value = "SELECT m FROM Movie m JOIN m.favorite f WHERE f.user.id = :id ORDER BY f.createdAt DESC",
+            countQuery = "SELECT COUNT(m) FROM Movie m JOIN m.favorite f WHERE f.user.id = :id"
+    )
+    Page<Movie> findByFavoriteUserId(UUID id, Pageable pageable);
+
     Optional<Movie> findByTmdbId(Long tmdbId);
 }

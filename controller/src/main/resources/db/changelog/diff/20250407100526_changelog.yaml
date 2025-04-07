@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_movie_favorite_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_movie_favorites
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_movie_favorites
+                  name: user_id
+                  type: UUID
+              - column:
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: movie_favorites
+  - changeSet:
+      id: foreign_key_movie_favorites_movie
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: movie_watchlist
+            constraintName: fk_movie_favorites_movie
+            referencedColumnNames: tmdb_id
+            referencedTableName: movies
+            onDelete: CASCADE
+  - changeSet:
+      id: foreign_key_movie_favorites_user
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: movie_watchlist
+            constraintName: fk_movie_favorites_user
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE

@@ -1,13 +1,10 @@
 package fr.quoi_regarder.service.movie;
 
-import fr.quoi_regarder.commons.enums.LanguageIsoType;
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.dto.movie.MovieDto;
 import fr.quoi_regarder.dto.movie.MovieWatchlistDto;
 import fr.quoi_regarder.entity.movie.Movie;
-import fr.quoi_regarder.entity.movie.MovieTranslation;
 import fr.quoi_regarder.entity.movie.MovieWatchlist;
-import fr.quoi_regarder.entity.movie.id.MovieTranslationId;
 import fr.quoi_regarder.entity.movie.id.MovieWatchlistId;
 import fr.quoi_regarder.event.movie.MovieTotalRuntimeEvent;
 import fr.quoi_regarder.event.movie.MovieWatchlistChangedEvent;
@@ -16,9 +13,7 @@ import fr.quoi_regarder.exception.exceptions.EntityNotExistsException;
 import fr.quoi_regarder.mapper.movie.MovieMapper;
 import fr.quoi_regarder.mapper.movie.MovieWatchlistMapper;
 import fr.quoi_regarder.repository.movie.MovieRepository;
-import fr.quoi_regarder.repository.movie.MovieTranslationRepository;
 import fr.quoi_regarder.repository.movie.MovieWatchlistRepository;
-import fr.quoi_regarder.service.TmdbService;
 import fr.quoi_regarder.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -31,19 +26,20 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.sql.Date;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class MovieWatchlistService {
-    private final MovieTranslationRepository movieTranslationRepository;
     private final MovieWatchlistRepository movieWatchlistRepository;
     private final MovieWatchlistMapper movieWatchlistMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final MovieRepository movieRepository;
+    private final MovieService movieService;
     private final MovieMapper movieMapper;
-    private final TmdbService tmdbService;
     private final UserService userService;
 
     /**
@@ -143,9 +139,8 @@ public class MovieWatchlistService {
      * @param dto MovieWatchlistDto
      * @return Created MovieWatchlistDto
      */
-    @Transactional
-    public MovieWatchlistDto create(MovieWatchlistDto dto) {
-        ensureMovieExists(dto.getTmdbId());
+    private MovieWatchlistDto create(MovieWatchlistDto dto) {
+        movieService.ensureMovieExists(dto.getTmdbId());
 
         MovieWatchlistId movieWatchlistId = new MovieWatchlistId();
         movieWatchlistId.setUserId(dto.getUserId());
@@ -170,8 +165,7 @@ public class MovieWatchlistService {
      * @param status New watch status
      * @return Updated MovieWatchlistDto
      */
-    @Transactional
-    public MovieWatchlistDto update(UUID userId, Long tmdbId, WatchStatus status) {
+    private MovieWatchlistDto update(UUID userId, Long tmdbId, WatchStatus status) {
         MovieWatchlist movieWatchlist = movieWatchlistRepository
                 .findByIdTmdbIdAndIdUserId(tmdbId, userId)
                 .orElseThrow(() -> new EntityNotExistsException(MovieWatchlist.class,
@@ -187,8 +181,7 @@ public class MovieWatchlistService {
      * @param userId User ID
      * @param tmdbId TMDB ID
      */
-    @Transactional
-    public void delete(UUID userId, Long tmdbId) {
+    private void delete(UUID userId, Long tmdbId) {
         movieWatchlistRepository.deleteByUserIdAndTmdbId(userId, tmdbId);
     }
 
@@ -215,104 +208,5 @@ public class MovieWatchlistService {
             eventPublisher.publishEvent(new MovieTotalRuntimeEvent(this, userId, runtimeData));
         } catch (Exception ignored) {
         }
-    }
-
-    /**
-     * Ensures movie exists in the database, fetches and saves it if necessary
-     *
-     * @param tmdbId TMDB ID
-     */
-    private void ensureMovieExists(Long tmdbId) {
-        if (movieRepository.existsById(tmdbId)) {
-            return; // Skip if movie already exists
-        }
-
-        String userLanguage = userService.getCurrentUserLanguage();
-        Map<String, Object> movieDetails = tmdbService.fetchMovieDetails(tmdbId, userLanguage);
-
-        if (movieDetails == null || movieDetails.isEmpty()) {
-            throw new EntityNotExistsException(Movie.class, String.format("TMDB ID: %s", tmdbId));
-        }
-
-        // Save or update movie details and translations
-        saveOrUpdateMovie(tmdbId, movieDetails);
-        saveMovieTranslation(tmdbId, userLanguage, movieDetails);
-
-        // Fetch and save translations for other languages asynchronously
-        fetchOtherLanguageTranslationsAsync(tmdbId, userLanguage);
-    }
-
-    /**
-     * Saves or updates movie details
-     *
-     * @param tmdbId       TMDB ID
-     * @param movieDetails Movie details from TMDB
-     */
-    private void saveOrUpdateMovie(Long tmdbId, Map<String, Object> movieDetails) {
-        Movie movie = movieRepository.findByTmdbId(tmdbId).orElse(new Movie());
-        movie.setTmdbId(tmdbId);
-        movie.setRuntime((Integer) movieDetails.get("runtime"));
-
-        // Vérifier si release_date est null avant la conversion
-        String releaseDate = (String) movieDetails.get("release_date");
-        if (releaseDate != null && !releaseDate.isEmpty()) {
-            movie.setReleaseDate(Date.valueOf(releaseDate));
-        } else {
-            movie.setReleaseDate(null);
-        }
-
-        movie.setPosterPath((String) movieDetails.get("poster_path"));
-        movieRepository.save(movie);
-    }
-
-    /**
-     * Saves movie translation for a specific language
-     *
-     * @param tmdbId       TMDB ID
-     * @param language     Language code
-     * @param movieDetails Movie details from TMDB
-     */
-    private void saveMovieTranslation(Long tmdbId, String language, Map<String, Object> movieDetails) {
-        // Verify if the translation already exists
-        MovieTranslationId id = new MovieTranslationId();
-        id.setTmdbId(tmdbId);
-        id.setLanguage(language);
-        if (movieTranslationRepository.existsById(id)) {
-            return;
-        }
-
-        MovieTranslation translation = new MovieTranslation();
-
-        translation.setId(id);
-        translation.setTitle((String) movieDetails.get("title"));
-        translation.setOverview((String) movieDetails.get("overview"));
-        movieTranslationRepository.save(translation);
-    }
-
-    /**
-     * Asynchronously fetch and save translations for other languages
-     *
-     * @param tmdbId          TMDB ID
-     * @param defaultLanguage Default language to exclude
-     */
-    @Async
-    public void fetchOtherLanguageTranslationsAsync(Long tmdbId, String defaultLanguage) {
-        CompletableFuture.runAsync(() -> {
-            LanguageIsoType defaultLangType = LanguageIsoType.findByCode(defaultLanguage);
-
-            Arrays.stream(LanguageIsoType.values())
-                    .filter(lang -> !lang.equals(defaultLangType))
-                    .parallel()
-                    .forEach(lang -> {
-                        // Verify if the translation already exists before making the API call
-                        MovieTranslationId id = new MovieTranslationId();
-                        id.setTmdbId(tmdbId);
-                        id.setLanguage(lang.getCode());
-                        if (!movieTranslationRepository.existsById(id)) {
-                            Map<String, Object> movieDetails = tmdbService.fetchMovieDetails(tmdbId, lang.getCode());
-                            saveMovieTranslation(tmdbId, lang.getCode(), movieDetails);
-                        }
-                    });
-        });
     }
 }

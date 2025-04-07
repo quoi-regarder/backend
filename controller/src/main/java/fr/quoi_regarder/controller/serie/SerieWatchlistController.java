@@ -52,7 +52,7 @@ public class SerieWatchlistController {
             @PathVariable UUID userId,
             @RequestParam WatchStatus status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "20") int limit) {
         Page<SerieDto> series = serieWatchlistService.findSeriesByUserIdAndStatus(userId, status, page, limit);
         return ResponseEntity.ok(ApiResponse.success("Series found", series, HttpStatus.OK));
     }
