@@ -25,6 +25,9 @@ public class Movie implements Serializable {
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MovieWatchlist> watchlist;
 
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MovieFavorite> favorite;
+
     @Column(name = "runtime", nullable = false)
     private Integer runtime;
 

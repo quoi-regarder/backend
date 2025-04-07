@@ -45,7 +45,7 @@ public class MovieWatchlistController {
             @PathVariable UUID userId,
             @RequestParam WatchStatus status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "20") int limit) {
         Page<MovieDto> movies = movieWatchlistService.findMoviesByUserIdAndStatus(userId, status, page, limit);
         return ResponseEntity.ok(ApiResponse.success("Movies found", movies, HttpStatus.OK));
     }
