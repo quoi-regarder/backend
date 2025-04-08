@@ -1,10 +1,7 @@
-package fr.quoi_regarder.service.serie;
+package fr.quoi_regarder.service.serie.watchlist;
 
-import fr.quoi_regarder.commons.enums.EventAction;
-import fr.quoi_regarder.commons.enums.SerieContext;
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.dto.serie.SerieDto;
-import fr.quoi_regarder.dto.serie.SerieWatchlistDto;
 import fr.quoi_regarder.entity.serie.*;
 import fr.quoi_regarder.entity.serie.id.SerieEpisodeWatchlistId;
 import fr.quoi_regarder.entity.serie.id.SerieSeasonWatchlistId;
@@ -13,11 +10,13 @@ import fr.quoi_regarder.entity.user.User;
 import fr.quoi_regarder.mapper.serie.SerieMapper;
 import fr.quoi_regarder.repository.serie.*;
 import fr.quoi_regarder.repository.user.UserRepository;
+import fr.quoi_regarder.service.serie.SerieService;
 import fr.quoi_regarder.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
@@ -27,7 +26,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class SerieWatchlistService implements WatchlistService<SerieWatchlistDto> {
+public class SerieWatchlistService {
     private final SerieEpisodeWatchlistRepository serieEpisodeWatchlistRepository;
     private final SerieSeasonWatchlistRepository serieSeasonWatchlistRepository;
     private final SerieWatchlistEventService serieWatchlistEventService;
@@ -36,6 +35,7 @@ public class SerieWatchlistService implements WatchlistService<SerieWatchlistDto
     private final SerieSeasonRepository serieSeasonRepository;
     private final SerieRepository serieRepository;
     private final UserRepository userRepository;
+    private final SerieService serieService;
     private final UserService userService;
     private final SerieMapper serieMapper;
 
@@ -50,19 +50,32 @@ public class SerieWatchlistService implements WatchlistService<SerieWatchlistDto
         return serieWatchlistEventService.getTotalRuntimeForUser(userId);
     }
 
-    @Override
     @Transactional
-    public void handleAction(UUID userId, Long serieId, Long contextId, EventAction action, WatchStatus watchStatus) {
-        switch (action) {
-            case ADD, UPDATE -> addToWatchlistInternal(userId, serieId, watchStatus);
-            case REMOVE -> removeFromWatchlistInternal(userId, serieId);
-        }
-        serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+    public void addToWatchlist(UUID userId, Long serieId, WatchStatus status) {
+        serieService.loadSerie(userId, serieId, (uid, sid) -> {
+            addToWatchlistInternal(uid, sid, status);
+
+            serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+        });
     }
 
-    @Override
-    public SerieContext getContext() {
-        return SerieContext.SERIE;
+    @Transactional
+    public void updateWatchStatus(UUID userId, Long serieId, WatchStatus status) {
+        serieService.loadSerie(userId, serieId, (uid, sid) -> {
+            addToWatchlistInternal(uid, sid, status);
+
+            serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+
+        });
+    }
+
+    @Transactional
+    public void removeFromWatchlist(UUID userId, Long serieId) {
+        serieService.loadSerie(userId, serieId, (uid, sid) -> {
+            removeFromWatchlistInternal(uid, sid);
+
+            serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+        });
     }
 
     private void addToWatchlistInternal(UUID userId, Long serieId, WatchStatus watchStatus) {

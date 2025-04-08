@@ -1,4 +1,4 @@
-package fr.quoi_regarder.service.serie;
+package fr.quoi_regarder.service.serie.watchlist;
 
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.event.serie.SerieEpisodeWatchlistIdsEvent;

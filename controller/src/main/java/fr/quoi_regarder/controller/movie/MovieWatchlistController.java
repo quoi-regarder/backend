@@ -5,7 +5,7 @@ import fr.quoi_regarder.dto.movie.MovieDto;
 import fr.quoi_regarder.dto.movie.MovieWatchlistDto;
 import fr.quoi_regarder.dto.movie.UpdateStatusRequest;
 import fr.quoi_regarder.dto.response.ApiResponse;
-import fr.quoi_regarder.service.movie.MovieWatchlistService;
+import fr.quoi_regarder.service.movie.watchlist.MovieWatchlistService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

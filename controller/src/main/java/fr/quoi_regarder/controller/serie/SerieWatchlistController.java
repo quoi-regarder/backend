@@ -1,15 +1,12 @@
 package fr.quoi_regarder.controller.serie;
 
-import fr.quoi_regarder.commons.enums.EventAction;
-import fr.quoi_regarder.commons.enums.SerieContext;
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.dto.movie.UpdateStatusRequest;
 import fr.quoi_regarder.dto.response.ApiResponse;
 import fr.quoi_regarder.dto.serie.SerieDto;
 import fr.quoi_regarder.dto.serie.SerieWatchlistDto;
-import fr.quoi_regarder.service.serie.SerieService;
-import fr.quoi_regarder.service.serie.SerieWatchlistEventService;
-import fr.quoi_regarder.service.serie.SerieWatchlistService;
+import fr.quoi_regarder.service.serie.watchlist.SerieWatchlistEventService;
+import fr.quoi_regarder.service.serie.watchlist.SerieWatchlistService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +28,7 @@ import java.util.UUID;
 public class SerieWatchlistController {
     private final SerieWatchlistEventService serieWatchlistEventService;
     private final SerieWatchlistService serieWatchlistService;
-    private final SerieService serieService;
+//    private final SerieService serieService;
 
     /**
      * Get all series IDs in a user's watchlist grouped by status
@@ -75,7 +72,7 @@ public class SerieWatchlistController {
     public ResponseEntity<ApiResponse<Void>> addSerie(
             @PathVariable UUID userId,
             @Valid @RequestBody SerieWatchlistDto serieWatchlistDTO) {
-        serieService.ensureSerieExists(userId, serieWatchlistDTO.getTmdbId(), null, SerieContext.SERIE, EventAction.ADD, serieWatchlistDTO.getStatus());
+        serieWatchlistService.addToWatchlist(userId, serieWatchlistDTO.getTmdbId(), serieWatchlistDTO.getStatus());
         return ResponseEntity.ok(ApiResponse.success("Serie added to watchlist", null, HttpStatus.OK));
     }
 
@@ -87,7 +84,7 @@ public class SerieWatchlistController {
             @PathVariable UUID userId,
             @PathVariable Long serieId,
             @Valid @RequestBody UpdateStatusRequest updateStatusRequest) {
-        serieService.ensureSerieExists(userId, serieId, null, SerieContext.SERIE, EventAction.UPDATE, updateStatusRequest.getStatus());
+        serieWatchlistService.updateWatchStatus(userId, serieId, updateStatusRequest.getStatus());
         return ResponseEntity.ok(ApiResponse.success("Serie watch status updated", null, HttpStatus.OK));
     }
 
@@ -98,7 +95,7 @@ public class SerieWatchlistController {
     public ResponseEntity<ApiResponse<Void>> removeSerie(
             @PathVariable UUID userId,
             @PathVariable Long serieId) {
-        serieService.ensureSerieExists(userId, serieId, null, SerieContext.SERIE, EventAction.REMOVE, null);
+        serieWatchlistService.removeFromWatchlist(userId, serieId);
         return ResponseEntity.ok(ApiResponse.success("Serie removed from watchlist", null, HttpStatus.OK));
     }
 }

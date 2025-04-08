@@ -1,4 +1,4 @@
-package fr.quoi_regarder.entity.movie;
+package fr.quoi_regarder.dto.serie;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MovieFavoriteDto implements Serializable {
+public class SerieFavoriteDto implements Serializable {
     @NotNull
     private Long tmdbId;
     @NotNull

@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_serie_favorite_table
+      author: william
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_favorites
+                  name: tmdb_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_serie_favorites
+                  name: user_id
+                  type: UUID
+              - column:
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+            tableName: serie_favorites
+  - changeSet:
+      id: foreign_key_serie_favorites_serie
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: serie_favorites
+            constraintName: fk_serie_favorites_serie
+            referencedColumnNames: tmdb_id
+            referencedTableName: series
+            onDelete: CASCADE
+  - changeSet:
+      id: foreign_key_serie_favorites_user
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: serie_favorites
+            constraintName: fk_serie_favorites_user
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE

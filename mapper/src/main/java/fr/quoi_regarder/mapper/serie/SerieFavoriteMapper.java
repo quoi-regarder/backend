@@ -1,21 +1,21 @@
-package fr.quoi_regarder.mapper.movie;
+package fr.quoi_regarder.mapper.serie;
 
-import fr.quoi_regarder.dto.movie.MovieFavoriteDto;
-import fr.quoi_regarder.entity.movie.MovieFavorite;
+import fr.quoi_regarder.dto.serie.SerieFavoriteDto;
+import fr.quoi_regarder.entity.serie.SerieFavorite;
 import org.mapstruct.*;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
-public interface MovieFavoriteMapper {
+public interface SerieFavoriteMapper {
     @Mapping(target = "id.tmdbId", source = "tmdbId")
     @Mapping(target = "id.userId", source = "userId")
-    MovieFavorite toEntity(MovieFavoriteDto movieFavoriteDto);
+    SerieFavorite toEntity(SerieFavoriteDto serieFavoriteDto);
 
     @Mapping(target = "tmdbId", source = "id.tmdbId")
     @Mapping(target = "userId", source = "id.userId")
-    MovieFavoriteDto toDto(MovieFavorite movieFavorite);
+    SerieFavoriteDto toDto(SerieFavorite serieFavorite);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "id.tmdbId", ignore = true)
     @Mapping(target = "id.userId", ignore = true)
-    MovieFavorite partialUpdate(MovieFavoriteDto movieFavoriteDto, @MappingTarget MovieFavorite movieFavorite);
+    SerieFavorite partialUpdate(SerieFavoriteDto serieFavoriteDto, @MappingTarget SerieFavorite serieFavorite);
 }

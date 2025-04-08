@@ -1,4 +1,4 @@
-package fr.quoi_regarder.service.serie;
+package fr.quoi_regarder.service.movie.watchlist;
 
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.dto.serie.SerieEpisodeWatchlistDto;
@@ -13,6 +13,7 @@ import fr.quoi_regarder.mapper.serie.SerieSeasonWatchlistMapper;
 import fr.quoi_regarder.mapper.serie.SerieWatchlistMapper;
 import fr.quoi_regarder.repository.serie.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -25,7 +26,9 @@ public class WatchlistStatusCalculator {
     private final SerieEpisodeWatchlistRepository episodeWatchlistRepository;
     private final SerieSeasonWatchlistRepository seasonWatchlistRepository;
     private final SerieWatchlistRepository serieWatchlistRepository;
+    @Qualifier("serieEpisodeWatchlistMapper")
     private final SerieEpisodeWatchlistMapper episodeWatchlistMapper;
+    @Qualifier("serieSeasonWatchlistMapper")
     private final SerieSeasonWatchlistMapper seasonWatchlistMapper;
     private final SerieWatchlistMapper serieWatchlistMapper;
     private final SerieEpisodeRepository episodeRepository;

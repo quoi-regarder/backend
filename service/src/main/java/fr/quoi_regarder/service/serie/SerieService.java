@@ -1,9 +1,6 @@
 package fr.quoi_regarder.service.serie;
 
-import fr.quoi_regarder.commons.enums.EventAction;
 import fr.quoi_regarder.commons.enums.LanguageIsoType;
-import fr.quoi_regarder.commons.enums.SerieContext;
-import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.entity.serie.Serie;
 import fr.quoi_regarder.entity.serie.SerieEpisode;
 import fr.quoi_regarder.entity.serie.SerieSeason;
@@ -17,7 +14,6 @@ import fr.quoi_regarder.repository.serie.SerieTranslationRepository;
 import fr.quoi_regarder.service.TmdbService;
 import fr.quoi_regarder.service.user.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -29,10 +25,8 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SerieService {
     private final SerieTranslationRepository serieTranslationRepository;
-    private final List<WatchlistService<?>> watchlistServices;
     private final SerieEpisodeRepository serieEpisodeRepository;
     private final SerieSeasonRepository serieSeasonRepository;
     private final SerieRepository serieRepository;
@@ -40,14 +34,7 @@ public class SerieService {
     private final UserService userService;
 
     @Transactional
-    public void ensureSerieExists(
-            UUID userId,
-            Long serieId,
-            Long contextId,
-            SerieContext context,
-            EventAction action,
-            WatchStatus watchStatus
-    ) {
+    public void loadSerie(UUID userId, Long serieId, SerieLoadCallback callback) {
         String userLanguage = userService.getCurrentUserLanguage();
         Map<String, Object> serieDetails = tmdbService.fetchSerieDetails(serieId, userLanguage);
 
@@ -62,30 +49,25 @@ public class SerieService {
             CompletableFuture<Void> episodesFuture = CompletableFuture.runAsync(() ->
                             processSerieEpisodes(serieId, serieDetails))
                     .exceptionally(ex -> {
-                        log.error("Error processing episodes", ex);
                         return null;
                     });
 
             CompletableFuture<Void> translationsFuture = CompletableFuture.runAsync(() ->
                             processTranslations(serieId, userLanguage))
                     .exceptionally(ex -> {
-                        log.error("Error processing translations", ex);
                         return null;
                     });
 
             CompletableFuture.allOf(episodesFuture, translationsFuture)
-                    .thenRunAsync(() -> handleWatchlistAction(userId, serieId, contextId, context, action, watchStatus))
-                    .exceptionally(ex -> {
-                        log.error("Error publishing event", ex);
-                        return null;
+                    .thenRun(() -> {
+                        callback.onSerieLoaded(userId, serieId);
                     });
-
         } else {
             throw new EntityNotExistsException(Serie.class, "Failed to save series with TMDB ID: " + serieId);
         }
     }
 
-    public void processSerieEpisodes(Long serieId, Map<String, Object> serieDetails) {
+    private void processSerieEpisodes(Long serieId, Map<String, Object> serieDetails) {
         Serie serie = serieRepository.findByTmdbId(serieId).orElse(null);
         if (serie == null) return;
 
@@ -96,7 +78,7 @@ public class SerieService {
         seasons.parallelStream().forEach(season -> processSingleSeason(serie, season));
     }
 
-    public void processTranslations(Long serieId, String defaultLanguage) {
+    private void processTranslations(Long serieId, String defaultLanguage) {
         Serie serie = serieRepository.findByTmdbId(serieId).orElse(null);
         if (serie == null) return;
 
@@ -236,13 +218,6 @@ public class SerieService {
         return serieEpisode;
     }
 
-    private void handleWatchlistAction(UUID userId, Long serieId, Long contextId, SerieContext context, EventAction action, WatchStatus watchStatus) {
-        watchlistServices.stream()
-                .filter(service -> service.getContext() == context)
-                .findFirst()
-                .ifPresent(service -> service.handleAction(userId, serieId, contextId, action, watchStatus));
-    }
-
     private void saveOrUpdateSerie(Long tmdbId, Map<String, Object> serieDetails) {
         boolean exists = serieRepository.existsByTmdbId(tmdbId);
 
@@ -281,5 +256,10 @@ public class SerieService {
         translation.setName((String) serieDetails.get("name"));
         translation.setOverview((String) serieDetails.get("overview"));
         serieTranslationRepository.save(translation);
+    }
+
+    @FunctionalInterface
+    public interface SerieLoadCallback {
+        void onSerieLoaded(UUID userId, Long serieId);
     }
 }
