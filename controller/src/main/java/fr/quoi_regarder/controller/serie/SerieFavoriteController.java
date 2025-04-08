@@ -1,9 +1,9 @@
-package fr.quoi_regarder.controller.movie;
+package fr.quoi_regarder.controller.serie;
 
-import fr.quoi_regarder.dto.movie.MovieDto;
-import fr.quoi_regarder.dto.movie.MovieFavoriteDto;
 import fr.quoi_regarder.dto.response.ApiResponse;
-import fr.quoi_regarder.service.movie.favorite.MovieFavoriteService;
+import fr.quoi_regarder.dto.serie.SerieDto;
+import fr.quoi_regarder.dto.serie.SerieFavoriteDto;
+import fr.quoi_regarder.service.serie.favorite.SerieFavoriteService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +18,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/movie-favorite/{userId}/movie")
+@RequestMapping("/serie-favorite/{userId}/serie")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "Bearer Authentication")
 @PreAuthorize("@userSecurity.checkUserId(#userId)")
-public class MovieFavoriteController {
-    private final MovieFavoriteService movieFavoriteService;
+public class SerieFavoriteController {
+    private final SerieFavoriteService serieFavoriteService;
 
     /**
      * Get all movie IDs in a user's favorites
@@ -32,7 +32,7 @@ public class MovieFavoriteController {
     public ResponseEntity<ApiResponse<Map<String, List<Long>>>> getFavoriteMovies(
             @PathVariable UUID userId
     ) {
-        Map<String, List<Long>> result = movieFavoriteService.findFavoriteMovieIdsByUserId(userId);
+        Map<String, List<Long>> result = serieFavoriteService.findFavoriteMovieIdsByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success("Movies found", result, HttpStatus.OK));
     }
 
@@ -40,12 +40,12 @@ public class MovieFavoriteController {
      * Get detailed movie information from favorites with pagination
      */
     @GetMapping("/details")
-    public ResponseEntity<ApiResponse<Page<MovieDto>>> getMovieDetails(
+    public ResponseEntity<ApiResponse<Page<SerieDto>>> getFavoriteMovies(
             @PathVariable UUID userId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int limit
+            @RequestParam(defaultValue = "10") int limit
     ) {
-        Page<MovieDto> movies = movieFavoriteService.findMoviesByUserId(userId, page, limit);
+        Page<SerieDto> movies = serieFavoriteService.findMoviesByUserId(userId, page, limit);
         return ResponseEntity.ok(ApiResponse.success("Movies found", movies, HttpStatus.OK));
     }
 
@@ -53,12 +53,13 @@ public class MovieFavoriteController {
      * Add a movie to favorites
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<MovieFavoriteDto>> addFavoriteMovie(
+    public ResponseEntity<ApiResponse<Void>> addFavoriteMovie(
             @PathVariable UUID userId,
-            @Valid @RequestBody MovieFavoriteDto movieFavoriteDto
+            @Valid @RequestBody SerieFavoriteDto serieFavoriteDto
     ) {
-        MovieFavoriteDto result = movieFavoriteService.addMovieToFavorites(userId, movieFavoriteDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Movie added to favorites", result, HttpStatus.CREATED));
+        serieFavoriteService.addMovieToFavorites(userId, serieFavoriteDto);
+
+        return ResponseEntity.ok(ApiResponse.success("Movie added to favorites", null, HttpStatus.OK));
     }
 
     /**
@@ -69,8 +70,8 @@ public class MovieFavoriteController {
             @PathVariable UUID userId,
             @PathVariable Long movieId
     ) {
-        movieFavoriteService.removeMovieFromFavorites(userId, movieId);
+        serieFavoriteService.removeMovieFromFavorites(userId, movieId);
 
-        return ResponseEntity.ok(ApiResponse.success("Movie removed from favorites", null, HttpStatus.OK));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success("Movie removed from favorites", null, HttpStatus.NO_CONTENT));
     }
 }

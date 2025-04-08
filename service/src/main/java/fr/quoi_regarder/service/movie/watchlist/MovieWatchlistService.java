@@ -1,4 +1,4 @@
-package fr.quoi_regarder.service.movie;
+package fr.quoi_regarder.service.movie.watchlist;
 
 import fr.quoi_regarder.commons.enums.WatchStatus;
 import fr.quoi_regarder.dto.movie.MovieDto;
@@ -14,6 +14,7 @@ import fr.quoi_regarder.mapper.movie.MovieMapper;
 import fr.quoi_regarder.mapper.movie.MovieWatchlistMapper;
 import fr.quoi_regarder.repository.movie.MovieRepository;
 import fr.quoi_regarder.repository.movie.MovieWatchlistRepository;
+import fr.quoi_regarder.service.movie.MovieService;
 import fr.quoi_regarder.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;

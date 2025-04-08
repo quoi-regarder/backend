@@ -1,9 +1,6 @@
-package fr.quoi_regarder.service.serie;
+package fr.quoi_regarder.service.serie.watchlist;
 
-import fr.quoi_regarder.commons.enums.EventAction;
-import fr.quoi_regarder.commons.enums.SerieContext;
 import fr.quoi_regarder.commons.enums.WatchStatus;
-import fr.quoi_regarder.dto.serie.SerieSeasonWatchlistDto;
 import fr.quoi_regarder.dto.serie.SerieWatchlistDto;
 import fr.quoi_regarder.entity.serie.SerieEpisode;
 import fr.quoi_regarder.entity.serie.SerieEpisodeWatchlist;
@@ -14,6 +11,8 @@ import fr.quoi_regarder.entity.serie.id.SerieSeasonWatchlistId;
 import fr.quoi_regarder.entity.user.User;
 import fr.quoi_regarder.repository.serie.*;
 import fr.quoi_regarder.repository.user.UserRepository;
+import fr.quoi_regarder.service.movie.watchlist.WatchlistStatusCalculator;
+import fr.quoi_regarder.service.serie.SerieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +23,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class SerieSeasonWatchlistService implements WatchlistService<SerieSeasonWatchlistDto> {
+public class SerieSeasonWatchlistService {
     private final SerieEpisodeWatchlistRepository serieEpisodeWatchlistRepository;
     private final SerieSeasonWatchlistRepository serieSeasonWatchlistRepository;
     private final SerieWatchlistEventService serieWatchlistEventService;
@@ -33,21 +32,33 @@ public class SerieSeasonWatchlistService implements WatchlistService<SerieSeason
     private final SerieEpisodeRepository serieEpisodeRepository;
     private final SerieSeasonRepository serieSeasonRepository;
     private final UserRepository userRepository;
+    private final SerieService serieService;
 
-    @Override
     @Transactional
-    public void handleAction(UUID userId, Long serieId, Long seasonId, EventAction action, WatchStatus watchStatus) {
-        switch (action) {
-            case ADD -> addToWatchlistInternal(userId, serieId, seasonId, watchStatus);
-            case UPDATE -> updateStatusInternal(userId, serieId, seasonId, watchStatus);
-            case REMOVE -> removeFromWatchlistInternal(userId, serieId, seasonId);
-        }
-        serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+    public void addToWatchlist(UUID userId, Long serieId, Long seasonId, WatchStatus status) {
+        serieService.loadSerie(userId, serieId, (uid, sid) -> {
+            addToWatchlistInternal(uid, sid, seasonId, status);
+
+            serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+        });
     }
 
-    @Override
-    public SerieContext getContext() {
-        return SerieContext.SEASON;
+    @Transactional
+    public void updateWatchStatus(UUID userId, Long serieId, Long seasonId, WatchStatus status) {
+        serieService.loadSerie(userId, serieId, (uid, sid) -> {
+            updateStatusInternal(uid, sid, seasonId, status);
+
+            serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+        });
+    }
+
+    @Transactional
+    public void removeFromWatchlist(UUID userId, Long serieId, Long seasonId) {
+        serieService.loadSerie(userId, serieId, (uid, sid) -> {
+            removeFromWatchlistInternal(uid, sid, seasonId);
+
+            serieWatchlistEventService.publishWatchlistEvents(userId, serieId);
+        });
     }
 
     private void removeFromWatchlistInternal(UUID userId, Long serieId, Long seasonId) {

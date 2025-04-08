@@ -1,12 +1,10 @@
 package fr.quoi_regarder.controller.serie;
 
-import fr.quoi_regarder.commons.enums.EventAction;
-import fr.quoi_regarder.commons.enums.SerieContext;
 import fr.quoi_regarder.dto.movie.UpdateStatusRequest;
 import fr.quoi_regarder.dto.response.ApiResponse;
 import fr.quoi_regarder.dto.serie.SerieSeasonWatchlistDto;
-import fr.quoi_regarder.service.serie.SerieService;
-import fr.quoi_regarder.service.serie.SerieWatchlistEventService;
+import fr.quoi_regarder.service.serie.watchlist.SerieSeasonWatchlistService;
+import fr.quoi_regarder.service.serie.watchlist.SerieWatchlistEventService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,7 @@ import java.util.UUID;
 @PreAuthorize("@userSecurity.checkUserId(#userId)")
 public class SerieSeasonWatchlistController {
     private final SerieWatchlistEventService serieWatchlistEventService;
-    private final SerieService serieService;
+    private final SerieSeasonWatchlistService serieSeasonWatchlistService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Map<String, List<Long>>>> getSerieSeasons(
@@ -44,7 +42,7 @@ public class SerieSeasonWatchlistController {
             @PathVariable String serieId,
             @Valid @RequestBody SerieSeasonWatchlistDto dto
     ) {
-        serieService.ensureSerieExists(userId, Long.valueOf(serieId), dto.getTmdbId(), SerieContext.SEASON, EventAction.ADD, dto.getStatus());
+        serieSeasonWatchlistService.addToWatchlist(userId, Long.valueOf(serieId), dto.getTmdbId(), dto.getStatus());
         return ResponseEntity.ok(ApiResponse.success("Season added to watchlist", null, HttpStatus.OK));
     }
 
@@ -55,7 +53,7 @@ public class SerieSeasonWatchlistController {
             @PathVariable String seasonId,
             @Valid @RequestBody UpdateStatusRequest updateStatusRequest
     ) {
-        serieService.ensureSerieExists(userId, Long.valueOf(serieId), Long.valueOf(seasonId), SerieContext.SEASON, EventAction.UPDATE, updateStatusRequest.getStatus());
+        serieSeasonWatchlistService.updateWatchStatus(userId, Long.valueOf(serieId), Long.valueOf(seasonId), updateStatusRequest.getStatus());
         return ResponseEntity.ok(ApiResponse.success("Season watch status updated", null, HttpStatus.OK));
     }
 
@@ -65,7 +63,7 @@ public class SerieSeasonWatchlistController {
             @PathVariable String serieId,
             @PathVariable String seasonId
     ) {
-        serieService.ensureSerieExists(userId, Long.valueOf(serieId), Long.valueOf(seasonId), SerieContext.SEASON, EventAction.REMOVE, null);
+        serieSeasonWatchlistService.removeFromWatchlist(userId, Long.valueOf(serieId), Long.valueOf(seasonId));
         return ResponseEntity.ok(ApiResponse.success("Season removed from watchlist", null, HttpStatus.OK));
     }
 }

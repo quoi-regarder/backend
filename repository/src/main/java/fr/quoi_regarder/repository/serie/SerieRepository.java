@@ -22,13 +22,17 @@ public interface SerieRepository extends JpaRepository<Serie, Long> {
     )
     Page<Serie> findByWatchlistUserIdAndWatchlistStatus(UUID id, WatchStatus status, Pageable pageable);
 
+    @Query(
+            value = "SELECT s FROM Serie s JOIN s.favorite f WHERE f.user.id = :id ORDER BY f.createdAt DESC",
+            countQuery = "SELECT COUNT(s) FROM Serie s JOIN s.favorite f WHERE f.user.id = :id"
+    )
+    Page<Serie> findByFavoriteUserId(UUID id, Pageable pageable);
+
     Optional<Serie> findByTmdbId(Long tmdbId);
 
     Boolean existsByTmdbId(Long tmdbId);
 
     @Modifying
     @Query("UPDATE Serie s SET s.posterPath = :posterPath, s.firstAirDate = :firstAirDate WHERE s.tmdbId = :tmdbId")
-    int updateSerie(@Param("tmdbId") Long tmdbId,
-                    @Param("posterPath") String posterPath,
-                    @Param("firstAirDate") Date firstAirDate);
+    int updateSerie(@Param("tmdbId") Long tmdbId, @Param("posterPath") String posterPath, @Param("firstAirDate") Date firstAirDate);
 }

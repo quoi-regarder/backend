@@ -1,26 +1,23 @@
-package fr.quoi_regarder.service.movie;
+package fr.quoi_regarder.service.movie.favorite;
 
 import fr.quoi_regarder.dto.movie.MovieDto;
+import fr.quoi_regarder.dto.movie.MovieFavoriteDto;
 import fr.quoi_regarder.entity.movie.Movie;
 import fr.quoi_regarder.entity.movie.MovieFavorite;
-import fr.quoi_regarder.entity.movie.MovieFavoriteDto;
 import fr.quoi_regarder.entity.movie.id.MovieFavoriteId;
-import fr.quoi_regarder.event.movie.MovieFavoriteChangedEvent;
 import fr.quoi_regarder.event.movie.MovieFavoriteIdsEvent;
 import fr.quoi_regarder.mapper.movie.MovieFavoriteMapper;
 import fr.quoi_regarder.mapper.movie.MovieMapper;
 import fr.quoi_regarder.repository.movie.MovieFavoriteRepository;
 import fr.quoi_regarder.repository.movie.MovieRepository;
+import fr.quoi_regarder.service.movie.MovieService;
 import fr.quoi_regarder.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +76,7 @@ public class MovieFavoriteService {
     public MovieFavoriteDto addMovieToFavorites(UUID userId, MovieFavoriteDto movieFavoriteDto) {
         MovieFavoriteDto result = create(movieFavoriteDto);
 
-        eventPublisher.publishEvent(new MovieFavoriteChangedEvent(this, userId));
+        publishMovieFavoriteChangedEvent(userId);
 
         return result;
     }
@@ -94,7 +91,7 @@ public class MovieFavoriteService {
     public void removeMovieFromFavorites(UUID userId, Long tmdbId) {
         delete(userId, tmdbId);
 
-        eventPublisher.publishEvent(new MovieFavoriteChangedEvent(this, userId));
+        publishMovieFavoriteChangedEvent(userId);
     }
 
     /**
@@ -130,22 +127,18 @@ public class MovieFavoriteService {
         movieFavoriteRepository.deleteByUserIdAndTmdbId(userId, tmdbId);
     }
 
+
     /**
-     * Handles the event when a movie is added to or removed from favorites
-     * and sends notifications with up-to-date data.
+     * Publishes an event when a movie favorite changes
      *
-     * @param event Event indicating a change in movie favorites
+     * @param userId User ID
      */
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleMovieFavoriteChangedEvent(MovieFavoriteChangedEvent event) {
-        UUID userId = event.getUserId();
-
+    private void publishMovieFavoriteChangedEvent(UUID userId) {
         try {
-            Map<String, List<Long>> movieIds = findFavoriteMovieIdsByUserId(userId);
+            Map<String, List<Long>> result = findFavoriteMovieIdsByUserId(userId);
 
-            eventPublisher.publishEvent(new MovieFavoriteIdsEvent(this, userId, movieIds));
-        } catch (Exception ignored) {
+            eventPublisher.publishEvent(new MovieFavoriteIdsEvent(this, userId, result));
+        } catch (Exception ignore) {
         }
     }
 }
