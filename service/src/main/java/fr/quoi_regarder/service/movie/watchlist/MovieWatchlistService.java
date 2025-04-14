@@ -27,10 +27,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.sql.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -146,17 +143,20 @@ public class MovieWatchlistService {
         MovieWatchlistId movieWatchlistId = new MovieWatchlistId();
         movieWatchlistId.setUserId(dto.getUserId());
         movieWatchlistId.setTmdbId(dto.getTmdbId());
+        Optional<MovieWatchlist> existing = movieWatchlistRepository.findById(movieWatchlistId);
 
-        if (movieWatchlistRepository.existsById(movieWatchlistId)) {
-            return update(dto.getUserId(), dto.getTmdbId(), dto.getStatus());
-        }
-        MovieWatchlist movieWatchlist = new MovieWatchlist();
-        movieWatchlist.setId(movieWatchlistId);
-        movieWatchlist.setStatus(dto.getStatus());
-        movieWatchlist.setCreatedAt(new Date(System.currentTimeMillis()));
+        MovieWatchlist entity = existing.orElseGet(() -> {
+            MovieWatchlist newEntry = new MovieWatchlist();
+            newEntry.setId(movieWatchlistId);
+            newEntry.setCreatedAt(new Date(System.currentTimeMillis()));
 
-        return movieWatchlistMapper.toDto(movieWatchlistRepository.save(movieWatchlist));
+            return newEntry;
+        });
+
+        entity.setStatus(dto.getStatus());
+        return movieWatchlistMapper.toDto(movieWatchlistRepository.save(entity));
     }
+
 
     /**
      * Updates a movie watchlist entry
