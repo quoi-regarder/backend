@@ -1,0 +1,116 @@
+databaseChangeLog:
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_movie_watchlist
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE movie_watchlist ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_serie_watchlist
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE serie_watchlist ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_serie_season_watchlist
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE serie_season_watchlist ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_serie_episode_watchlist
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE serie_episode_watchlist ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_movie_translations
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE movie_translations ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_movies
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE movies ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_serie_episodes
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE serie_episodes ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_serie_seasons
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE serie_seasons ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_serie_translations
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE serie_translations ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_series
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE series ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: remove_nullable_constraint_from_created_at_tokens
+      author: william
+      changes:
+        - sql:
+            sql: ALTER TABLE tokens ALTER COLUMN created_at DROP NOT NULL;
+  - changeSet:
+      id: fix_movie_watchlist_foreign_keys
+      author: william
+      changes:
+        - dropForeignKeyConstraint:
+            constraintName: fk_movie_watchlist_movie
+            baseTableName: movie_watchlist
+        - dropForeignKeyConstraint:
+            constraintName: fk_movie_watchlist_user
+            baseTableName: movie_watchlist
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: movie_watchlist
+            constraintName: fk_movie_watchlist_movie
+            referencedColumnNames: tmdb_id
+            referencedTableName: movies
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: movie_watchlist
+            constraintName: fk_movie_watchlist_user
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE
+
+  - changeSet:
+      id: fix_movie_favorites_foreign_keys
+      author: william
+      changes:
+        - dropForeignKeyConstraint:
+            constraintName: fk_movie_favorites_movie
+            baseTableName: movie_watchlist
+        - dropForeignKeyConstraint:
+            constraintName: fk_movie_favorites_user
+            baseTableName: movie_watchlist
+        - addForeignKeyConstraint:
+            baseColumnNames: tmdb_id
+            baseTableName: movie_favorites
+            constraintName: fk_movie_favorites_movie
+            referencedColumnNames: tmdb_id
+            referencedTableName: movies
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: movie_favorites
+            constraintName: fk_movie_favorites_user
+            referencedColumnNames: id
+            referencedTableName: users
+            onDelete: CASCADE

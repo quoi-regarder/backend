@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -108,7 +107,6 @@ public class WatchlistStatusCalculator {
                             dto.setTmdbId(episodeId);
                             dto.setUserId(userId);
                             dto.setStatus(status);
-                            dto.setCreatedAt(new Date(System.currentTimeMillis()));
                             episodeWatchlistRepository.save(episodeWatchlistMapper.toEntity(dto));
                         }
                 );
@@ -130,7 +128,6 @@ public class WatchlistStatusCalculator {
                             dto.setTmdbId(seasonId);
                             dto.setUserId(userId);
                             dto.setStatus(status);
-                            dto.setCreatedAt(new Date(System.currentTimeMillis()));
                             seasonWatchlistRepository.save(seasonWatchlistMapper.toEntity(dto));
                         }
                 );
@@ -148,7 +145,6 @@ public class WatchlistStatusCalculator {
                             dto.setTmdbId(serieId);
                             dto.setUserId(userId);
                             dto.setStatus(status);
-                            dto.setCreatedAt(new Date(System.currentTimeMillis()));
                             serieWatchlistRepository.save(serieWatchlistMapper.toEntity(dto));
                         }
                 );
