@@ -1,0 +1,150 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_emotion_type_enum
+      author: william
+      changes:
+        - sql:
+            sql: |
+              CREATE TYPE emotion_type AS ENUM (
+                'MOVED',
+                'HAPPY',
+                'SAD',
+                'INSPIRED',
+                'THRILLED',
+                'SCARED',
+                'BORED',
+                'DISAPPOINTED',
+                'CONFUSED',
+                'RELAXED'
+              );
+  - changeSet:
+      id: create_viewing_context_type_enum
+      author: william
+      changes:
+        - sql:
+            sql: |
+              CREATE TYPE viewing_context_type AS ENUM (
+                  'MOVIE',
+                  'SERIE',
+                  'SERIE_SEASON',
+                  'SERIE_EPISODE'
+              );
+  - changeSet:
+      id: create_viewing_details_table
+      author: william
+      changes:
+        - createTable:
+            tableName: viewing_details
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: platform_id
+                  type: BIGINT
+              - column:
+                  name: rating
+                  type: INT
+              - column:
+                  name: liked
+                  type: BOOLEAN
+              - column:
+                  name: emotion
+                  type: emotion_type
+              - column:
+                  name: context_type
+                  type: viewing_context_type
+                  constraints:
+                    nullable: false
+              - column:
+                  name: context_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: create_viewing_details_platform_fk
+      author: william
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: viewing_details
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_viewing_details_user
+            onDelete: CASCADE
+  - changeSet:
+      id: add_viewing_details_to_movie_watchlist
+      author: william
+      changes:
+        - addColumn:
+            tableName: movie_watchlist
+            columns:
+              - column:
+                  name: viewing_details_id
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseTableName: movie_watchlist
+            baseColumnNames: viewing_details_id
+            referencedTableName: viewing_details
+            referencedColumnNames: id
+            constraintName: fk_movie_watchlist_viewing_details
+            onDelete: CASCADE
+  - changeSet:
+      id: add_viewing_details_to_serie_watchlist
+      author: william
+      changes:
+        - addColumn:
+            tableName: serie_watchlist
+            columns:
+              - column:
+                  name: viewing_details_id
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseTableName: serie_watchlist
+            baseColumnNames: viewing_details_id
+            referencedTableName: viewing_details
+            referencedColumnNames: id
+            constraintName: fk_serie_watchlist_viewing_details
+            onDelete: CASCADE
+  - changeSet:
+      id: add_viewing_details_to_serie_season_watchlist
+      author: william
+      changes:
+        - addColumn:
+            tableName: serie_season_watchlist
+            columns:
+              - column:
+                  name: viewing_details_id
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseTableName: serie_season_watchlist
+            baseColumnNames: viewing_details_id
+            referencedTableName: viewing_details
+            referencedColumnNames: id
+            constraintName: fk_serie_season_watchlist_viewing_details
+            onDelete: CASCADE
+  - changeSet:
+      id: add_viewing_details_to_serie_episode_watchlist
+      author: william
+      changes:
+        - addColumn:
+            tableName: serie_episode_watchlist
+            columns:
+              - column:
+                  name: viewing_details_id
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseTableName: serie_episode_watchlist
+            baseColumnNames: viewing_details_id
+            referencedTableName: viewing_details
+            referencedColumnNames: id
+            constraintName: fk_serie_episode_watchlist_viewing_details
+            onDelete: CASCADE

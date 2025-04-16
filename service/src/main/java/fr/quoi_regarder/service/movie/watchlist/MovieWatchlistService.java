@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.sql.Date;
 import java.util.*;
 
 @Service
@@ -148,7 +147,6 @@ public class MovieWatchlistService {
         MovieWatchlist entity = existing.orElseGet(() -> {
             MovieWatchlist newEntry = new MovieWatchlist();
             newEntry.setId(movieWatchlistId);
-            newEntry.setCreatedAt(new Date(System.currentTimeMillis()));
 
             return newEntry;
         });

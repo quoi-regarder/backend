@@ -16,10 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -102,7 +100,6 @@ public class SerieWatchlistService {
         serieWatchlist.setSerie(serie);
         serieWatchlist.setUser(user);
         serieWatchlist.setStatus(watchStatus);
-        serieWatchlist.setCreatedAt(new Date(System.currentTimeMillis()));
         serieWatchlistRepository.save(serieWatchlist);
 
         // Create and save season watchlist
@@ -116,7 +113,6 @@ public class SerieWatchlistService {
                     seasonWatchlist.setSerieSeason(season);
                     seasonWatchlist.setUser(user);
                     seasonWatchlist.setStatus(watchStatus);
-                    seasonWatchlist.setCreatedAt(new Date(System.currentTimeMillis()));
                     return seasonWatchlist;
                 })
                 .toList();
@@ -133,7 +129,6 @@ public class SerieWatchlistService {
                     episodeWatchlist.setSerieEpisode(episode);
                     episodeWatchlist.setUser(user);
                     episodeWatchlist.setStatus(watchStatus);
-                    episodeWatchlist.setCreatedAt(new Date(System.currentTimeMillis()));
                     return episodeWatchlist;
                 })
                 .toList();
