@@ -2,10 +2,7 @@ package fr.quoi_regarder.controller.user;
 
 import fr.quoi_regarder.commons.enums.ErrorStatus;
 import fr.quoi_regarder.dto.response.ApiResponse;
-import fr.quoi_regarder.dto.user.ProfileDto;
-import fr.quoi_regarder.dto.user.UpdateColorModeDto;
-import fr.quoi_regarder.dto.user.UpdateLanguageDto;
-import fr.quoi_regarder.dto.user.UpdateProfileDto;
+import fr.quoi_regarder.dto.user.*;
 import fr.quoi_regarder.service.user.ProfileService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -107,6 +104,14 @@ public class ProfileController {
         ProfileDto updatedProfile = profileService.updateColorMode(userId, colorModeDto);
         return ResponseEntity.ok(
                 ApiResponse.success("Color mode preference updated successfully", updatedProfile, HttpStatus.OK)
+        );
+    }
+
+    @PutMapping("/{userId}/onboarding")
+    public ResponseEntity<ApiResponse<ProfileDto>> updateOnboarding(@PathVariable UUID userId, @RequestBody UpdateOnboardingDto onboardingDto) {
+        ProfileDto updatedProfile = profileService.updateOnboarding(userId, onboardingDto.isOnboarding());
+        return ResponseEntity.ok(
+                ApiResponse.success("Onboarding status updated successfully", updatedProfile, HttpStatus.OK)
         );
     }
 }

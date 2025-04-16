@@ -26,6 +26,7 @@ public class ProfileDto implements Serializable {
     private String avatarUrl;
     private String language;
     private ColorModeType colorMode;
+    private boolean onboarding;
     private Date createdAt;
     private Date updatedAt;
 }

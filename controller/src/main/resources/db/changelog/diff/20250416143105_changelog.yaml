@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: add_onboarding_flag_to_profile
+      author: william
+      changes:
+        - addColumn:
+            tableName: profiles
+            columns:
+              - column:
+                  name: onboarding
+                  type: boolean
+                  defaultValue: false
+                  constraints:
+                    nullable: false
