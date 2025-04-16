@@ -155,6 +155,18 @@ public class ProfileService {
         return profileDto;
     }
 
+    @Transactional
+    public ProfileDto updateOnboarding(UUID userId, boolean onboarding) {
+        Profile profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotExistsException(Profile.class, userId.toString()));
+
+        profile.setOnboarding(onboarding);
+
+        eventPublisher.publishEvent(new ProfileUpdatedEvent(this, userId, profileMapper.toDto(profile)));
+
+        return profileMapper.toDto(profileRepository.save(profile));
+    }
+
     private void validateAvatarFile(MultipartFile file) {
         // Check file size
         if (file.getSize() > MAX_AVATAR_SIZE) {

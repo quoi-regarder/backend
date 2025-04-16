@@ -44,6 +44,9 @@ public class Profile implements Serializable {
     @Column(name = "color_mode", nullable = false)
     private ColorModeType colorMode;
 
+    @Column(name = "onboarding", nullable = false)
+    private boolean onboarding;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;

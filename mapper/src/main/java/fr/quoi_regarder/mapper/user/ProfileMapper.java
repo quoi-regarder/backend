@@ -16,6 +16,7 @@ public abstract class ProfileMapper {
     public abstract Profile toEntity(ProfileDto profileDto);
 
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "onboarding", source = "onboarding")
     public abstract ProfileDto toDto(Profile profile);
 
     public abstract Profile partialUpdate(@MappingTarget Profile profile, ProfileDto profileDto);
