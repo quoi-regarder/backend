@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: delete_liked_viewing_details
+      author: william
+      changes:
+        - dropColumn:
+            tableName: viewing_details
+            columnName: liked
