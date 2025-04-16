@@ -19,7 +19,6 @@ public class ViewingDetailsDto implements Serializable {
     private Long platformId;
     @Min(0)
     private Integer rating;
-    private Boolean liked;
     private Emotion emotion;
     private ContextType contextType;
     private Long contextId;

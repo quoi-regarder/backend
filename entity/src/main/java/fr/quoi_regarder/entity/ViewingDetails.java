@@ -23,8 +23,6 @@ public class ViewingDetails implements Serializable {
 
     private Integer rating;
 
-    private Boolean liked;
-
     @Enumerated(EnumType.STRING)
     private Emotion emotion;
 

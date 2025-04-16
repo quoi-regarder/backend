@@ -43,7 +43,6 @@ public class ViewingDetailsService {
     private void updateViewingDetails(ViewingDetails existingViewingDetails, ViewingDetailsDto viewingDetailsDto) {
         existingViewingDetails.setPlatformId(viewingDetailsDto.getPlatformId());
         existingViewingDetails.setRating(viewingDetailsDto.getRating());
-        existingViewingDetails.setLiked(viewingDetailsDto.getLiked());
         existingViewingDetails.setEmotion(viewingDetailsDto.getEmotion());
         existingViewingDetails.setContextType(viewingDetailsDto.getContextType());
         existingViewingDetails.setContextId(viewingDetailsDto.getContextId());
