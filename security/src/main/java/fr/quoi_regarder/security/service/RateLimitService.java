@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RateLimitService {
     // Rate limits configuration
     private static final int ANONYMOUS_LIMIT = 50; // 50 requests per minute for anonymous users
-    private static final int AUTHENTICATED_LIMIT = 200; // 200 requests per minute for authenticated users
+    private static final int AUTHENTICATED_LIMIT = 500; // 500 requests per minute for authenticated users
 
     // Cache of buckets, keyed by client identifier
     private final Map<String, Bucket> bucketCache = new ConcurrentHashMap<>();
